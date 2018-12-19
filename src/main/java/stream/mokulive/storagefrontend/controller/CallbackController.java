@@ -10,6 +10,7 @@ import org.springframework.http.MediaType;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import stream.mokulive.storagefrontend.utils.Auth0Helper;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -21,6 +22,9 @@ import java.io.IOException;
 public class CallbackController {
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
+
+    @Autowired
+    private Auth0Helper auth0Helper;
 
     @Autowired
     private AuthController controller;
@@ -47,6 +51,7 @@ public class CallbackController {
             Tokens tokens = controller.handle(req);
             SessionUtils.set(req, "accessToken", tokens.getAccessToken());
             SessionUtils.set(req, "idToken", tokens.getIdToken());
+            auth0Helper.getUserId(tokens.getAccessToken());
             res.sendRedirect(redirectOnSuccess);
         } catch (IdentityVerificationException e) {
             e.printStackTrace();
