@@ -1,0 +1,169 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <link href="/css/bootstrap.min.css" rel="stylesheet"/>
+    <link href="/css/main/style.css" rel="stylesheet"/>
+
+    <title>储物整理</title>
+</head>
+
+<body>
+
+<nav class="navbar navbar-expand-md navbar-dark bg-dark fixed-top">
+    <a class="navbar-brand" href="#">整理俺的家</a>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarsExampleDefault" aria-controls="navbarsExampleDefault" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="collapse navbar-collapse" id="navbarsExampleDefault">
+        <ul class="navbar-nav mr-auto">
+            <li class="nav-item active">
+                <a class="nav-link" href="#">首页 <span class="sr-only"></span></a>
+            </li>
+            <li class="nav-item dropdown">
+                <a class="nav-link dropdown-toggle" id="house1" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">俺的House1</a>
+                <div class="dropdown-menu" aria-labelledby="house1">
+                    <a class="dropdown-item" href="#">管理储物空间</a>
+                    <a class="dropdown-item" href="#">管理物品</a>
+                    <a class="dropdown-item" href="#">删除House</a>
+                </div>
+            </li>
+
+            <li class="nav-item dropdown">
+                <a class="nav-link dropdown-toggle" id="option" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">设置</a>
+                <div class="dropdown-menu" aria-labelledby="option">
+                    <a class="dropdown-item" href="#">添加House</a>
+                </div>
+            </li>
+        </ul>
+        <form class="form-inline my-2 my-lg-0">
+            <input class="form-control mr-sm-2" type="text" placeholder="输入找不到的物品名字" aria-label="Search">
+            <button class="btn btn-outline-default my-2 my-sm-0" type="submit">搜索</button>
+        </form>
+    </div>
+</nav>
+
+<div role="main" class="container" style="max-width:100% !important;">
+
+    <div class="content row">
+        <div class="col-lg-4 col-xs-12">
+            <div>
+                <label for="zoom">图片缩放</label><br/>
+                <span class="col-lg-1">小</span>
+                <input type="range" class="col-lg-6 custom-range" min="1" max="1.4" step="0.2" id="zoom" value="1">
+                <span class="col-lg-1">大</span>
+            </div>
+
+            <div id="edit" style="display: none">
+                <button type="button" class="btn btn-secondary">Check</button>
+            </div>
+        </div>
+        <div class="col-lg-8 col-xs-12">
+            <div id="planImage" style="
+                background-image: url('/svg');
+                background-size:cover;
+                width:672px;
+                height:647px;">
+            </div>
+        </div>
+    </div>
+
+</div>
+
+
+<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+<script src="/js/bootstrap.min.js"></script>
+<script>
+    var xStart = 0;
+    var yStart = 0;
+    var xEnd = 0;
+    var yEnd = 0;
+
+    var svgWidth = 672;
+    var svgHeight = 647;
+    var zoomNumber = 1;
+
+    $(function() {
+        $("#planImage").mousedown(function(e){
+            xStart=e.pageX-$(this).offset().left; //获取当前鼠标相对div的X坐标
+            yStart=e.pageY-$(this).offset().top; //获取当前鼠标相对div的Y坐标
+            if(xStart && yStart) {
+                $("#selectionArea").remove();
+                var addDivWidth = 1;
+                var addDivHeight = 1;
+                var divX = xStart+1;
+                var divY = yStart+1;
+                var elementDiv = '<div id="selectionArea" style="' +
+                    'width:' + addDivWidth + 'px;' +
+                    'height:' + addDivHeight + 'px;' +
+                    'position:relative;' +
+                    'left:' + divX + 'px;' +
+                    'top:' + divY + 'px;' +
+//                    'border:solid 1px rgba(253,161,103);' +
+                    'background: rgba(253,161,103,0.6);' +
+                    'z-index:99' +
+                    '"></div>';
+                $("#planImage").append(elementDiv);
+            }
+        });
+
+        $("#planImage").mousemove(function(e){
+            xEnd=e.pageX-$(this).offset().left; //获取当前鼠标相对div的X坐标
+            yEnd=e.pageY-$(this).offset().top; //获取当前鼠标相对div的Y坐标
+            if(xStart && yStart) {
+                var addDivWidth = Math.abs(xEnd - xStart);
+                var addDivHeight = Math.abs(yEnd - yStart);
+                var divX = xEnd > xStart ? xStart : xEnd;
+                var divY = yEnd > yStart ? yStart : yEnd;
+                $("#selectionArea").css("width",addDivWidth);
+                $("#selectionArea").css("height",addDivHeight);
+                $("#selectionArea").css("left",divX);
+                $("#selectionArea").css("top",divY);
+            }
+        });
+
+        $("#planImage").mouseup(function(e){
+            console.log(xStart+','+yStart+','+xEnd+','+yEnd);
+            xEnd=e.pageX-$(this).offset().left; //获取当前鼠标相对div的X坐标
+            yEnd=e.pageY-$(this).offset().top; //获取当前鼠标相对div的Y坐标
+            if(xStart && yStart){
+                if(xStart === xEnd && yStart === yEnd){
+                    $("#selectionArea").remove();
+                }
+                xStart = 0;
+                yStart = 0;
+                xEnd = 0;
+                yEnd = 0;
+            }
+
+            if($("#selectionArea").attr("id")){
+                $("#edit").show();
+            }else{
+                $("#edit").hide();
+            }
+
+            var path = '<path d="M'+xStart+' '+yStart +
+                ' '+xEnd+' '+yStart +
+                ' '+xEnd+' '+yEnd +
+                ' L'+xStart+' '+yEnd + ' Z" fill="#DDD"/>';
+            $("#additional").append(path);
+        });
+
+        $("#zoom").change(function(){
+            var val = $(this).val();
+            zoomNumber = Number(val);
+            $("#planImage").css("width",svgWidth*zoomNumber);
+            $("#planImage").css("height",svgHeight*zoomNumber);
+            if($("#selectionArea").attr("id")){
+                $("#selectionArea").remove();
+            }
+            $("#edit").hide();
+        });
+    });
+</script>
+</body>
+</html>
