@@ -8,6 +8,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+import org.springframework.web.bind.annotation.ResponseBody;
 
 import java.util.Map;
 
@@ -32,13 +33,12 @@ public class Auth0Helper {
         response = Unirest.post("https://"+domain+"/userinfo")
                 .header("authorization", "Bearer " + accessToken)
                 .asString();
-        String body = response.getBody();
-        JSONObject json = new JSONObject(body);
+        JSONObject json = getJsonObject(response);
         result = json.getString("sub");
         return result;
     }
 
-    public HttpResponse getAppAccessToken() throws UnirestException {
+    public JSONObject getAppAccessToken() throws UnirestException {
         //获取access token
         HttpResponse<String> response = null;
         response = Unirest.post("https://"+domain+"/oauth/token")
@@ -46,16 +46,24 @@ public class Auth0Helper {
                 .body("{\"client_id\":\"" + clientId + "\",\"client_secret\":\"" + clientSecret + "\",\"audience\":\"https://"+domain+"/api/v2/\",\"grant_type\":\"client_credentials\"}")
                 .asString();
 //        logger.error("获取access token出错", e);
-        return response;
+        JSONObject json = getJsonObject(response);
+        return json;
     }
 
-    public HttpResponse getUserDetail(String userId, String appAccessToken) throws UnirestException {
-        //获取access token
+    public JSONObject getUserDetail(String userId, String appAccessToken) throws UnirestException {
+        //获取用户详情
         HttpResponse<String> response = null;
-        response = Unirest.post("https://"+domain+"/api/v2/users/" + userId)
+        response = Unirest.get("https://"+domain+"/api/v2/users/" + userId)
                 .header("authorization", "Bearer " + appAccessToken)
                 .asString();
 //        logger.error("获取用户信息出错", e);
-        return response;
+        JSONObject json = getJsonObject(response);
+        return json;
+    }
+
+    private JSONObject getJsonObject(HttpResponse<String> response) {
+        String body = response.getBody();
+        JSONObject json = new JSONObject(body);
+        return json;
     }
 }
