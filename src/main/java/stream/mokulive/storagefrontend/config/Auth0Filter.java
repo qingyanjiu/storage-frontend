@@ -1,12 +1,18 @@
 package stream.mokulive.storagefrontend.config;
 
 import com.auth0.SessionUtils;
+import org.springframework.boot.web.servlet.ServletComponentScan;
+import org.springframework.stereotype.Component;
 
 import javax.servlet.*;
+import javax.servlet.annotation.WebFilter;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
+@Component
+@ServletComponentScan
+@WebFilter(urlPatterns = {"/storage/*"},filterName = "auth0Filter")
 public class Auth0Filter implements Filter {
 
     @Override

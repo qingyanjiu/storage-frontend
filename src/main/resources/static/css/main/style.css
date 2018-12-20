@@ -1,3 +1,15 @@
+body {
+    font-family: "Microsoft YaHei UI";
+}
+
+.slider-track-high {
+    background: #EEE !important;
+}
+
+.slider-tick.round {
+    background: #DDD;
+}
+
 .content {
     padding: 2rem;
     margin-top: 56px;

@@ -25,47 +25,37 @@ public class Auth0Helper {
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
-    public String getUserId(String accessToken) {
+    public String getUserId(String accessToken) throws UnirestException{
         //从auth0获取当前登录的用户id
         HttpResponse<String> response = null;
         String result = "";
-        try {
-            response = Unirest.post("https://"+domain+"/userinfo")
-                    .header("authorization", "Bearer " + accessToken)
-                    .asString();
-            String body = response.getBody();
-            JSONObject json = new JSONObject(body);
-            result = json.getString("sub");
-        } catch (UnirestException e) {
-            logger.error("从auth0获取当前登录的用户id出错", e);
-        }
+        response = Unirest.post("https://"+domain+"/userinfo")
+                .header("authorization", "Bearer " + accessToken)
+                .asString();
+        String body = response.getBody();
+        JSONObject json = new JSONObject(body);
+        result = json.getString("sub");
         return result;
     }
 
-    public HttpResponse getAppAccessToken() {
+    public HttpResponse getAppAccessToken() throws UnirestException {
         //获取access token
         HttpResponse<String> response = null;
-        try {
-            response = Unirest.post("https://"+domain+"/oauth/token")
-                    .header("content-type", "application/json")
-                    .body("{\"client_id\":\"" + clientId + "\",\"client_secret\":\"" + clientSecret + "\",\"audience\":\"https://"+domain+"/api/v2/\",\"grant_type\":\"client_credentials\"}")
-                    .asString();
-        } catch (UnirestException e) {
-            logger.error("获取access token出错", e);
-        }
+        response = Unirest.post("https://"+domain+"/oauth/token")
+                .header("content-type", "application/json")
+                .body("{\"client_id\":\"" + clientId + "\",\"client_secret\":\"" + clientSecret + "\",\"audience\":\"https://"+domain+"/api/v2/\",\"grant_type\":\"client_credentials\"}")
+                .asString();
+//        logger.error("获取access token出错", e);
         return response;
     }
 
-    public HttpResponse getUserDetail(String userId, String appAccessToken) {
+    public HttpResponse getUserDetail(String userId, String appAccessToken) throws UnirestException {
         //获取access token
         HttpResponse<String> response = null;
-        try {
-            response = Unirest.post("https://"+domain+"/api/v2/users/" + userId)
-                    .header("authorization", "Bearer " + appAccessToken)
-                    .asString();
-        } catch (UnirestException e) {
-            logger.error("获取access token出错", e);
-        }
+        response = Unirest.post("https://"+domain+"/api/v2/users/" + userId)
+                .header("authorization", "Bearer " + appAccessToken)
+                .asString();
+//        logger.error("获取用户信息出错", e);
         return response;
     }
 }

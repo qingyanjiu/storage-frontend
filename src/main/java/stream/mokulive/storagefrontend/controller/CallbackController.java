@@ -3,6 +3,7 @@ package stream.mokulive.storagefrontend.controller;
 import com.auth0.IdentityVerificationException;
 import com.auth0.SessionUtils;
 import com.auth0.Tokens;
+import com.mashape.unirest.http.exceptions.UnirestException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,7 +34,7 @@ public class CallbackController {
 
     public CallbackController() {
         this.redirectOnFail = "/login";
-        this.redirectOnSuccess = "/portal/home";
+        this.redirectOnSuccess = "/storage/home";
     }
 
     @RequestMapping(value = "/callback", method = RequestMethod.GET)
@@ -51,11 +52,18 @@ public class CallbackController {
             Tokens tokens = controller.handle(req);
             SessionUtils.set(req, "accessToken", tokens.getAccessToken());
             SessionUtils.set(req, "idToken", tokens.getIdToken());
+
             String userId = auth0Helper.getUserId(tokens.getAccessToken());
             logger.info(userId+" 登录了");
+            //用户id塞入session
+            SessionUtils.set(req, "userId", userId);
+
             res.sendRedirect(redirectOnSuccess);
         } catch (IdentityVerificationException e) {
-            e.printStackTrace();
+            logger.error("auth0认证出错", e);
+            res.sendRedirect(redirectOnFail);
+        } catch (UnirestException e) {
+            logger.error("从auth0获取当前登录的用户id出错", e);
             res.sendRedirect(redirectOnFail);
         }
     }

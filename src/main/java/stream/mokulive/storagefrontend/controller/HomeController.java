@@ -17,7 +17,7 @@ public class HomeController {
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
-    @RequestMapping(value = "/portal/home", method = RequestMethod.GET)
+    @RequestMapping(value = "/storage/home", method = RequestMethod.GET)
     protected String home(final Map<String, Object> model, final HttpServletRequest req) {
         logger.info("Home page");
         String accessToken = (String) SessionUtils.get(req, "accessToken");
