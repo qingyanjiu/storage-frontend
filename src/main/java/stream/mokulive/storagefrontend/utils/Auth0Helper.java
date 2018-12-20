@@ -28,16 +28,18 @@ public class Auth0Helper {
     public String getUserId(String accessToken) {
         //从auth0获取当前登录的用户id
         HttpResponse<String> response = null;
+        String result = "";
         try {
             response = Unirest.post("https://"+domain+"/userinfo")
                     .header("authorization", "Bearer " + accessToken)
                     .asString();
             String body = response.getBody();
-            JSONObject jo = new JSONObject();
+            JSONObject json = new JSONObject(body);
+            result = json.getString("sub");
         } catch (UnirestException e) {
             logger.error("从auth0获取当前登录的用户id出错", e);
         }
-        return null;
+        return result;
     }
 
     public HttpResponse getAppAccessToken() {

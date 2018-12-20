@@ -51,7 +51,8 @@ public class CallbackController {
             Tokens tokens = controller.handle(req);
             SessionUtils.set(req, "accessToken", tokens.getAccessToken());
             SessionUtils.set(req, "idToken", tokens.getIdToken());
-            auth0Helper.getUserId(tokens.getAccessToken());
+            String userId = auth0Helper.getUserId(tokens.getAccessToken());
+            logger.info(userId+" 登录了");
             res.sendRedirect(redirectOnSuccess);
         } catch (IdentityVerificationException e) {
             e.printStackTrace();
