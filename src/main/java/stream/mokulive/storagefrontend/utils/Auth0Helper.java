@@ -1,5 +1,6 @@
 package stream.mokulive.storagefrontend.utils;
 
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.Unirest;
@@ -94,13 +95,14 @@ public class Auth0Helper {
     }
 
     //将user信息保存到backend数据库中
-    public void createUser(JSONObject user) throws Exception {
+    public JSONObject createUser(JSONObject user) throws Exception {
         HttpResponse<String> response = null;
+        JSONObject result = null;
         try {
             Auth0User body = new Auth0User();
-            body.setUserId(user.getString("user_id"));
-            body.setNick(user.getString("nickname"));
-            body.setAvatar(user.getString("picture"));
+            body.setUserId(user.getString("user_id").isEmpty() ? null : user.getString("user_id"));
+            body.setNick(user.getString("nickname").isEmpty() ? null : user.getString("nickname"));
+            body.setAvatar(user.getString("picture").isEmpty() ? null : user.getString("picture"));
             body.setEmail(user.getString("email").isEmpty() ? null : user.getString("email"));
             String bodyStr = JSONObject.toJSONString(body);
             response = Unirest.post(backendUrl + "/user/add")
@@ -108,6 +110,8 @@ public class Auth0Helper {
                     .body(bodyStr)
                     .asString();
             JSONObject json = getJsonObject(response);
+            logger.info("已经将user信息保存到backend数据库中");
+            result = (JSONObject) JSON.toJSON(body);
             if(json != null && !json.getBoolean("success")) {
                 logger.error("将user信息保存到backend数据库中出错");
             }
@@ -115,6 +119,7 @@ public class Auth0Helper {
             logger.error("将user信息保存到backend数据库中出错", e);
             throw new Exception(e);
         }
+        return result;
     }
 
     private JSONObject getJsonObject(HttpResponse<String> response) {

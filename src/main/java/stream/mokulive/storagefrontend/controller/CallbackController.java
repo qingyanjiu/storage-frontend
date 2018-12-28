@@ -70,24 +70,23 @@ public class CallbackController {
         } catch (UnirestException e) {
             logger.error("从auth0获取当前登录的用户id出错", e);
             res.sendRedirect(redirectOnFail);
+        } catch (Exception e) {
+            logger.error("更新用户信息出错", e);
+            res.sendRedirect(redirectOnFail);
         }
     }
 
-    private JSONObject updateUser(String userId){
+    private JSONObject updateUser(String userId) throws Exception{
         JSONObject result = null;
-        try {
-            JSONObject user = auth0Helper.checkUser(userId);
-            if("{}".equals(user.toString())){
-                String accessToken = auth0Helper.getAppAccessToken();
-                if(accessToken != null) {
-                    user = auth0Helper.getUserDetail(userId, accessToken);
-                    auth0Helper.createUser(user);
-                }
+        JSONObject user = auth0Helper.checkUser(userId);
+        if(user == null) {
+            String accessToken = auth0Helper.getAppAccessToken();
+            if (accessToken != null) {
+                JSONObject userDetail = auth0Helper.getUserDetail(userId, accessToken);
+                user = auth0Helper.createUser(userDetail);
             }
-            result = user;
-        } catch (Exception e) {
-            e.printStackTrace();
         }
+        result = user;
         return result;
     }
 
