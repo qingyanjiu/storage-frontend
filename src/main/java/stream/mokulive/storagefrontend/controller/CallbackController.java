@@ -1,5 +1,6 @@
 package stream.mokulive.storagefrontend.controller;
 
+import com.alibaba.fastjson.JSONObject;
 import com.auth0.IdentityVerificationException;
 import com.auth0.SessionUtils;
 import com.auth0.Tokens;
@@ -17,6 +18,7 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.Map;
 
 @SuppressWarnings("unused")
 @Controller
@@ -55,8 +57,11 @@ public class CallbackController {
 
             String userId = auth0Helper.getUserId(tokens.getAccessToken());
             logger.info(userId+" 登录了");
-            //用户id塞入session
-            SessionUtils.set(req, "userId", userId);
+
+            JSONObject user = updateUser(userId);
+            if(user != null){
+                SessionUtils.set(req,"user",JSONObject.toJavaObject(user,Map.class));
+            }
 
             res.sendRedirect(redirectOnSuccess);
         } catch (IdentityVerificationException e) {
@@ -66,6 +71,24 @@ public class CallbackController {
             logger.error("从auth0获取当前登录的用户id出错", e);
             res.sendRedirect(redirectOnFail);
         }
+    }
+
+    private JSONObject updateUser(String userId){
+        JSONObject result = null;
+        try {
+            JSONObject user = auth0Helper.checkUser(userId);
+            if("{}".equals(user.toString())){
+                String accessToken = auth0Helper.getAppAccessToken();
+                if(accessToken != null) {
+                    user = auth0Helper.getUserDetail(userId, accessToken);
+                    auth0Helper.createUser(user);
+                }
+            }
+            result = user;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return result;
     }
 
 }

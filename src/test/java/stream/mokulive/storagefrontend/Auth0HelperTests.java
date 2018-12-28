@@ -1,8 +1,7 @@
 package stream.mokulive.storagefrontend;
 
+import com.alibaba.fastjson.JSONObject;
 import com.mashape.unirest.http.exceptions.UnirestException;
-import org.json.JSONException;
-import org.json.JSONObject;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,13 +19,13 @@ public class Auth0HelperTests {
 	@Test
 	public void getUserDetailTest() {
 		try {
-			String accessToken = auth0Helper.getAppAccessToken().getString("access_token");
+			String accessToken = auth0Helper.getAppAccessToken();
 			JSONObject userDetail = auth0Helper.getUserDetail("weibo|1479540023", accessToken);
 			System.out.println(accessToken);
 			System.out.println(userDetail);
 		} catch (UnirestException e) {
 			e.printStackTrace();
-		} catch (JSONException e) {
+		} catch (Exception e) {
 			e.printStackTrace();
 		}
 	}
