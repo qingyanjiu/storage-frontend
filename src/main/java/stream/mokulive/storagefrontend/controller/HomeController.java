@@ -59,7 +59,8 @@ public class HomeController {
     @RequestMapping(value = "/goodsManage", method = RequestMethod.GET)
     protected String goodsManage(Model model, final HttpServletRequest req) {
         Object user = SessionUtils.get(req, "user");
-        model.addAttribute("user", new Auth0User());
+        model.addAttribute("user", user);
+//        model.addAttribute("user", new Auth0User());
         model.addAttribute("backendUrl", backendUrl);
         return "goods-manage";
     }
@@ -70,7 +71,8 @@ public class HomeController {
         Map result = new HashMap();
         try {
             Auth0User user = (Auth0User) SessionUtils.get(req, "user");
-            String userId = "mumu";
+            String userId = user.getUserId();
+//            String userId = "weibo|1479540023";
             String fileUrl = aliyunOssHelper.simpleUpload(file, userId);
             result.put("success",true);
             result.put("fileUrl",fileUrl);
