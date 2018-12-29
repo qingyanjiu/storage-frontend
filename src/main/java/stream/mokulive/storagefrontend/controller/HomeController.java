@@ -1,17 +1,15 @@
 package stream.mokulive.storagefrontend.controller;
 
 import com.auth0.SessionUtils;
-import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
-import stream.mokulive.storagefrontend.utils.Auth0User;
 
 import javax.servlet.http.HttpServletRequest;
-import java.util.Map;
 
 @SuppressWarnings("unused")
 @Controller
@@ -20,10 +18,14 @@ public class HomeController {
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
+    @Value("${custom.backendUrl}")
+    private String backendUrl;
+
     @RequestMapping(value = "/home", method = RequestMethod.GET)
     protected String home(Model model, final HttpServletRequest req) {
         Object user = SessionUtils.get(req, "user");
         model.addAttribute("user", user);
+        model.addAttribute("backendUrl", backendUrl);
         return "view";
     }
 
@@ -31,6 +33,7 @@ public class HomeController {
     protected String buildingManage(Model model, final HttpServletRequest req) {
         Object user = SessionUtils.get(req, "user");
         model.addAttribute("user", user);
+        model.addAttribute("backendUrl", backendUrl);
         return "building-manage";
     }
 
@@ -38,6 +41,7 @@ public class HomeController {
     protected String hotPointManage(Model model, final HttpServletRequest req) {
         Object user = SessionUtils.get(req, "user");
         model.addAttribute("user", user);
+        model.addAttribute("backendUrl", backendUrl);
         return "hotpoint-manage";
     }
 
@@ -45,6 +49,7 @@ public class HomeController {
     protected String goodsManage(Model model, final HttpServletRequest req) {
         Object user = SessionUtils.get(req, "user");
         model.addAttribute("user", user);
+        model.addAttribute("backendUrl", backendUrl);
         return "goods-manage";
     }
 

@@ -6,9 +6,10 @@
     <meta name="description" content=""/>
     <meta name="author" content=""/>
     <link href="/font-awesome-4.7.0/css/font-awesome.min.css" rel="stylesheet"/>
-    <link href="/css/bootstrap.min.css" rel="stylesheet"/>
-    <link href="/css/bootstrap-theme.min.css" rel="stylesheet"/>
+    <link href="/bootstrap-3.3.7/css/bootstrap.min.css" rel="stylesheet"/>
+    <link href="/bootstrap-3.3.7/css/bootstrap-theme.min.css" rel="stylesheet"/>
     <link href="/css/main/style.css" rel="stylesheet"/>
+    <link href="/bootstrap-table/bootstrap-table.min.css" rel="stylesheet"/>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-slider/10.4.2/css/bootstrap-slider.min.css" rel="stylesheet"/>
 
     <title>储物整理</title>
@@ -44,7 +45,7 @@
                             <div class="clearfix"></div>
                         </div>
                         <div class="x_content chart-content">
-                            <div style="min-height:100%;" id="goodsTableContent">
+                            <div style="min-height:100%;padding: 0 0 10px 0;" id="goodsTableContent">
                                 <table id="goodsTable"
                                        class="table table-condensed table-striped standard-table"
                                 ></table>
@@ -61,12 +62,123 @@
 <script src="https://code.jquery.com/jquery-3.3.1.min.js"
 		integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8="
 		crossorigin="anonymous"></script>
-<script src="/js/bootstrap.min.js"></script>
+<script src="/bootstrap-3.3.7/js/bootstrap.min.js"></script>
+<script src="/bootstrap-table/bootstrap-table.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-slider/10.4.2/bootstrap-slider.min.js"></script>
 
 <script th:inline="javascript">
     /*<![CDATA[*/
+        $(function(){
+            var backendUrl = [[${backendUrl}]];
+            var userId = [[${user.userId}]];
 
+            var urls = {
+                listAll: backendUrl+"/goods/",
+            }
+
+            var columns = [
+                {
+                    title: '物品名称',
+                    field: 'goodsName',
+                    valign: 'middle',
+                    halign: 'center',
+                    sortable: true,
+                },
+                {
+                    title: '所有者',
+                    field: 'owerName',
+                    valign: 'middle',
+                    halign: 'center',
+                    sortable: true,
+                },
+                {
+                    title: '位置描述',
+                    field: 'location',
+                    valign: 'middle',
+                    halign: 'center',
+                    sortable: true,
+                },
+                {
+                    title: '物品分类',
+                    field: 'typeName',
+                    valign: 'middle',
+                    halign: 'center',
+                    sortable: true,
+                },
+                {
+                    title: '备注',
+                    field: 'goodsComment',
+                    valign: 'middle',
+                    halign: 'center',
+                    sortable: false
+                },
+                {
+                    title: '价格',
+                    field: 'price',
+                    valign: 'middle',
+                    halign: 'center',
+                    sortable: true
+                },
+                {
+                    title: '购买时间',
+                    field: 'buyTime',
+                    valign: 'middle',
+                    halign: 'center',
+                    sortable: true
+                },
+                {
+                    title: '图',
+                    field: 'picture',
+                    valign: 'middle',
+                    halign: 'center',
+                    sortable: true,
+                    visible: false
+                },
+            ]
+
+            function initGoodsTable() {
+
+                $("#goodsTable").bootstrapTable('destroy');
+                $("#goodsTable").bootstrapTable({
+                    url: urls.listAll,
+                    columns: columns,
+                    showColumns: true,
+                    contentType: "application/json",
+                    pageSize: 10,
+                    dataType:'json',
+                    method: "post",
+                    search: true,
+                    escape: false,
+                    pageList: [10, 20, 30, 50, 100, 200, 300, 500],
+                    pagination: true,
+                    silentSort: false,
+                    queryParams: function (params) {
+                        return {
+                            userId: userId,
+                        };
+                    },
+                    onPostHeader: function(result){
+
+                    },
+                    onLoadSuccess: function (data) {
+
+                    },
+                    onColumnSwitch: function(field, checked) {
+
+                    },
+                    onPostBody: function (data) {
+
+                    }
+                });
+            }
+
+            function init(){
+                initGoodsTable();
+            }
+
+            init();
+
+        });
     //]]>
 </script>
 </body>
