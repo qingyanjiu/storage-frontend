@@ -33,3 +33,13 @@ h2 {
     padding:0 20px !important;
     background: #FFF;
 }
+
+.clickable-icon {
+    cursor: pointer;
+    color: #2e6da4;
+    font-size:2rem;
+}
+
+.goods-thumb {
+    cursor:pointer;
+}

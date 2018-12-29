@@ -8,8 +8,10 @@
     <link href="/font-awesome-4.7.0/css/font-awesome.min.css" rel="stylesheet"/>
     <link href="/bootstrap-3.3.7/css/bootstrap.min.css" rel="stylesheet"/>
     <link href="/bootstrap-3.3.7/css/bootstrap-theme.min.css" rel="stylesheet"/>
-    <link href="/css/main/style.css" rel="stylesheet"/>
+    <link href="/mycss/style.css" rel="stylesheet"/>
     <link href="/bootstrap-table/bootstrap-table.min.css" rel="stylesheet"/>
+    <link href="/bootstrap-select/css/bootstrap-select.min.css" rel="stylesheet"/>
+    <link href="/showloading/showloading.css" rel="stylesheet"/>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-slider/10.4.2/css/bootstrap-slider.min.css" rel="stylesheet"/>
 
     <title>储物整理</title>
@@ -29,23 +31,27 @@
                         <div class="x_title">
                             <h2>
                                 <span>物品管理</span>
-                                <div class="nav navbar-right panel_toolbox" style="min-width:20px">
-                                    <span style="margin-right:6px">
-                                        <a class="collapse-link" data-toggle="tooltip" data-container="body"
-                                           data-placement="left"
-                                           title="TBD">
-                                            <i class="fa fa-info-circle"></i></a>
+                                <div class="nav navbar-right panel_toolbox" style="min-width:20px;margin:0;float:right">
+                                    <span class="clickable-icon" style="margin-right:6px;" id="addGoods">
+                                        <span class="collapse-link" data-toggle="tooltip" data-container="body"
+                                           data-placement="top"
+                                           title="新增物品">
+                                            <i class="fa fa-plus-circle"></i>
+                                        </span>
                                     </span>
-                                    <span>
-                                        <a class="collapse-link datepicker"><i
-                                                class="fa fa-calendar"></i></a>
+                                    <span class="clickable-icon" id="deleteGoods">
+                                        <span class="collapse-link" data-toggle="tooltip" data-container="body"
+                                           data-placement="top"
+                                           title="删除物品">
+                                            <i class="fa fa-trash-o"></i>
+                                        </span>
                                     </span>
                                 </div>
                             </h2>
                             <div class="clearfix"></div>
                         </div>
                         <div class="x_content chart-content">
-                            <div style="min-height:100%;padding: 0 0 10px 0;" id="goodsTableContent">
+                            <div style="min-height:100%;padding: 0 0 20px 0;" id="goodsTableContent">
                                 <table id="goodsTable"
                                        class="table table-condensed table-striped standard-table"
                                 ></table>
@@ -58,127 +64,318 @@
     </div>
 </div>
 
+<div class="modal fade bs-example-modal-lg" id="addGoodsModal" role="dialog" tabindex="-1" data-backdrop="false">
+    <div class="modal-dialog modal-lg" style="width: 400px;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true"
+                        style="position:relative;top:0.4rem;">
+                    <i style="color: #b70000" class="glyphicon glyphicon-remove"></i>
+                </button>
+                <h4 class="modal-title">
+                    添加物品
+                </h4>
+            </div>
+            <div class="modal-body">
+                <form>
+                    <div class="form-group">
+                        <label for="goodsName">名称</label>
+                        <input type="text" class="form-control" id="goodsName" placeholder="填写物品名称"/>
+                    </div>
+                    <div class="form-group">
+                        <label for="goodsType" style="display:block">分类</label>
+                        <div id="goodsType">
+                            <select class="selectpicker" name="priority" data-width="fit" id="typeList">
+                                <option value=""></option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="owner">所有者</label>
+                        <input type="text" class="form-control" id="owner" placeholder="所有者姓名，或者爸爸妈妈等"/>
+                    </div>
+                    <div class="form-group">
+                        <label for="location">存放位置</label>
+                        <input type="text" class="form-control" id="location" placeholder="描述物品存放位置"/>
+                    </div>
+                    <div class="form-group">
+                        <label for="price">价格</label>
+                        <div class="input-group" id="price">
+                            <span class="input-group-addon">¥</span>
+                            <input type="number" class="form-control" placeholder="物品购买价格"/>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="byTime">购买时间</label>
+                        <input type="date" class="form-control" id="byTime" placeholder="物品购买时间"/>
+                    </div>
+                    <div class="form-group">
+                        <label for="comment">备注</label>
+                        <textarea class="form-control" id="comment" placeholder="物品备注信息"/>
+                    </div>
+                    <div class="form-group">
+                        <label for="tag">标签</label>
+                        <div class="input-group" id="tag">
+                            <input type="text" class="form-control" style="readonly:true"/>
+                            <span class="input-group-addon" style="cursor: pointer;color:#419641" id="addTag">
+                                <span class="collapse-link" data-toggle="tooltip" data-container="body"
+                                          data-placement="right" title="新增标签">
+                                    <i class="fa fa-plus-circle"></i>
+                                </span>
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="form-group" id="upload">
+                        <label for="uploadFile" style="display:block">物品图片</label>
+                        <div>
+                            <div class="file-container"
+                                 style="display:inline-block;position:relative;
+                                 overflow: hidden;vertical-align:middle;cursor: pointer">
+                                <button class="btn btn-default fileinput-button" type="button">上传</button>
+                                <input id="uploadFile" type="file"
+                                       onchange="loadFile(this.files[0])"
+                                       style="position:absolute;top:0;left:0;font-size:34px; opacity:0"/>
+                            </div>
+                            <img id="uploadThumb" src="" style="width:100%;vertical-align: middle;margin-top:6px"/>
+                        </div>
+                    </div>
+
+                    <hr/>
+                    <div class="form-group" style="text-align: center;margin-top:30px">
+                        <button type="submit" class="btn btn-success">确认添加物品</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
 
 <script src="https://code.jquery.com/jquery-3.3.1.min.js"
 		integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8="
 		crossorigin="anonymous"></script>
 <script src="/bootstrap-3.3.7/js/bootstrap.min.js"></script>
 <script src="/bootstrap-table/bootstrap-table.min.js"></script>
+<script src="/showloading/jquery.showloading.min.js"></script>
+<script src="/bootstrap-select/js/bootstrap-select.min.js"></script>
+<script src="/js/sweetalert.min.js"></script>
+<script src="/js/moment.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-slider/10.4.2/bootstrap-slider.min.js"></script>
 
 <script th:inline="javascript">
     /*<![CDATA[*/
-        $(function(){
-            var backendUrl = [[${backendUrl}]];
-            var userId = [[${user.userId}]];
+    $(function(){
+        init();
+    });
 
-            var urls = {
-                listAll: backendUrl+"/goods/",
-            }
+    var backendUrl = [[${backendUrl}]];
+    var userId = [[${user.userId}]];
 
-            var columns = [
-                {
-                    title: '物品名称',
-                    field: 'goodsName',
-                    valign: 'middle',
-                    halign: 'center',
-                    sortable: true,
-                },
-                {
-                    title: '所有者',
-                    field: 'owerName',
-                    valign: 'middle',
-                    halign: 'center',
-                    sortable: true,
-                },
-                {
-                    title: '位置描述',
-                    field: 'location',
-                    valign: 'middle',
-                    halign: 'center',
-                    sortable: true,
-                },
-                {
-                    title: '物品分类',
-                    field: 'typeName',
-                    valign: 'middle',
-                    halign: 'center',
-                    sortable: true,
-                },
-                {
-                    title: '备注',
-                    field: 'goodsComment',
-                    valign: 'middle',
-                    halign: 'center',
-                    sortable: false
-                },
-                {
-                    title: '价格',
-                    field: 'price',
-                    valign: 'middle',
-                    halign: 'center',
-                    sortable: true
-                },
-                {
-                    title: '购买时间',
-                    field: 'buyTime',
-                    valign: 'middle',
-                    halign: 'center',
-                    sortable: true
-                },
-                {
-                    title: '图',
-                    field: 'picture',
-                    valign: 'middle',
-                    halign: 'center',
-                    sortable: true,
-                    visible: false
-                },
-            ]
+    var currentEditingGoodsImageUrl = "";
+    var allTypeList = [];
 
-            function initGoodsTable() {
+    var urls = {
+        listAll: backendUrl+"/goods/",
+        getAllTypes: backendUrl+"/type/list",
+        uploadImage: "uploadImg",
+    };
 
-                $("#goodsTable").bootstrapTable('destroy');
-                $("#goodsTable").bootstrapTable({
-                    url: urls.listAll,
-                    columns: columns,
-                    showColumns: true,
-                    contentType: "application/json",
-                    pageSize: 10,
-                    dataType:'json',
-                    method: "post",
-                    search: true,
-                    escape: false,
-                    pageList: [10, 20, 30, 50, 100, 200, 300, 500],
-                    pagination: true,
-                    silentSort: false,
-                    queryParams: function (params) {
-                        return {
-                            userId: userId,
-                        };
-                    },
-                    onPostHeader: function(result){
+    var formatter = {
+        pictureFormatter: function(value,row){
+            var html = '<img src="'+value+'" data-img="'+value+'" class="goods-thumb"/>';
+            return html;
+        }
+    }
 
-                    },
-                    onLoadSuccess: function (data) {
+    var columns = [
+        {
+            title: '物品名称',
+            field: 'goodsName',
+            valign: 'middle',
+            halign: 'center',
+            sortable: true,
+        },
+        {
+            title: '所有者',
+            field: 'owerName',
+            valign: 'middle',
+            halign: 'center',
+            sortable: true,
+        },
+        {
+            title: '位置描述',
+            field: 'location',
+            valign: 'middle',
+            halign: 'center',
+            sortable: true,
+        },
+        {
+            title: '物品分类',
+            field: 'typeName',
+            valign: 'middle',
+            halign: 'center',
+            sortable: true,
+        },
+        {
+            title: '备注',
+            field: 'goodsComment',
+            valign: 'middle',
+            halign: 'center',
+            sortable: false
+        },
+        {
+            title: '价格',
+            field: 'price',
+            valign: 'middle',
+            halign: 'center',
+            sortable: true
+        },
+        {
+            title: '购买时间',
+            field: 'buyTime',
+            valign: 'middle',
+            halign: 'center',
+            sortable: true
+        },
+        {
+            title: '预览图',
+            field: 'picture',
+            valign: 'middle',
+            halign: 'center',
+            sortable: false,
+            visible: true,
+            formatter: formatter.pictureFormatter
+        },
+    ];
 
-                    },
-                    onColumnSwitch: function(field, checked) {
 
-                    },
-                    onPostBody: function (data) {
+    function init(){
+        $('[data-toggle="tooltip"]').tooltip();
 
-                    }
-                });
-            }
-
-            function init(){
-                initGoodsTable();
-            }
-
-            init();
-
+        $('#addGoods').click(function(){
+            $("#addGoodsModal").modal('show');
         });
+
+        //关闭对话框后当前文件url清空
+        $('#addGoodsModal').on('hidden.bs.modal', function (e) {
+            currentEditingGoodsImageUrl = "";
+        });
+
+        getAllGoodsType();
+        initGoodsTable();
+    }
+
+    //获取所有物品类型
+    function getAllGoodsType() {
+        $.ajax({
+            url: urls.getAllTypes,
+            type: 'post',
+            contentType: "application/json",
+            dataType:'json',
+            success: function (data) {
+                var typeList = data.typeList;
+                allTypeList = typeList;
+                //只取小类
+                var smallTypeList = allTypeList.filter(function(item){
+                    return item.parentTypeId;
+                })
+
+                for(var i in smallTypeList) {
+                    var type = smallTypeList[i];
+                    $("#typeList").append('<option value="'+type.typeId+'">'+type.typeName+'</option>');
+                    $('#typeList').selectpicker('refresh');
+                }
+            },
+            error: function (e) {
+                console.log("获取物品类型失败"+e);
+            }
+        });
+    }
+
+    //初始化物品列表
+    function initGoodsTable() {
+
+        $("#goodsTable").bootstrapTable('destroy');
+        $("#goodsTable").bootstrapTable({
+            url: urls.listAll,
+            columns: columns,
+            showColumns: true,
+            contentType: "application/json",
+            pageSize: 10,
+            dataType:'json',
+            method: "post",
+            search: true,
+            escape: false,
+            pageList: [10, 20, 30, 50, 100, 200, 300, 500],
+            pagination: true,
+            silentSort: false,
+            queryParams: function (params) {
+                return {
+                    userId: userId,
+                };
+            },
+            onPostHeader: function(result){
+
+            },
+            onLoadSuccess: function (data) {
+
+            },
+            onColumnSwitch: function(field, checked) {
+
+            },
+            onPostBody: function (data) {
+
+            }
+        });
+    }
+
+    function loadFile(file){
+        var ext = file.name.substring(file.name.lastIndexOf(".")+1,file.name.length);
+        if (!file) {
+            alert('请选择图片');
+            return;
+        } else if (
+            ext !== 'jpg'
+            && ext !== 'jpeg'
+            && ext !== 'png'
+        ) {
+            alert('请上传 jpg,jpeg,png 格式的图片');
+            return;
+        } else {
+            $("#upload").showLoading();
+            var formData = new FormData();
+            formData.append("file", file);
+            formData.append("name", file.name);
+            $.ajax({
+                url: urls.uploadImage,
+                type: 'post',
+                data: formData,
+                dataType: 'json',
+                fileElementId: 'fileContent',
+                // 告诉jQuery不要去处理发送的数据
+                processData: false,
+                // 告诉jQuery不要去设置Content-Type请求头
+                contentType: false,
+                cache: false,
+                traditional: true,
+                success: function (data) {
+                    $('#uploadThumb').attr('src', data.fileUrl);
+                    currentEditingGoodsImageUrl = data.fileUrl;
+                    $("#upload").hideLoading();
+                    swal("上传图片成功", {
+                        icon: "success",
+                    });
+                },
+                error: function (e) {
+                    console.log(e);
+                    $("#upload").hideLoading();
+                    swal("上传图片失败，请重试", {
+                        icon: "error",
+                    });
+                }
+            });
+        }
+    }
     //]]>
 </script>
 </body>
