@@ -106,36 +106,32 @@
                         </div>
                     </div>
                     <div class="form-group">
-                        <label for="byTime">购买时间</label>
-                        <input type="date" class="form-control" id="byTime" placeholder="物品购买时间"/>
+                        <label for="buyTime">购买时间</label>
+                        <input type="date" class="form-control" id="buyTime" placeholder="物品购买时间"/>
                     </div>
                     <div class="form-group">
                         <label for="comment">备注</label>
-                        <textarea class="form-control" id="comment" placeholder="物品备注信息"/>
+                        <textarea class="form-control" id="comment" placeholder="物品备注信息" style="max-width:100%"></textarea>
                     </div>
                     <div class="form-group">
-                        <label for="tag">标签</label>
-                        <div class="input-group" id="tag">
-                            <input type="text" class="form-control" style="readonly:true"/>
-                            <span class="input-group-addon" style="cursor: pointer;color:#419641" id="addTag">
-                                <span class="collapse-link" data-toggle="tooltip" data-container="body"
-                                          data-placement="right" title="新增标签">
-                                    <i class="fa fa-plus-circle"></i>
-                                </span>
-                            </span>
-                        </div>
+                        <label for="tagContent">标签</label><span style="margin-left:10px;font-size:12px;color:#888">( 输入后回车添加标签 )</span>
+                        <div id="tagContent">
+	                        <input class="form-control" id="tag" style="width:100px;"/>
+	                        <div id="tagList" class="nice-scroll" style="padding:10px 0 10px 0;overflow-x:auto;overflow-y:hidden">
+	                        </div>
+	                    </div>
                     </div>
 
                     <div class="form-group" id="upload">
-                        <label for="uploadFile" style="display:block">物品图片</label>
+                        <label style="display:block">物品图片</label>
                         <div>
                             <div class="file-container"
                                  style="display:inline-block;position:relative;
-                                 overflow: hidden;vertical-align:middle;cursor: pointer">
-                                <button class="btn btn-default fileinput-button" type="button">上传</button>
+                                 overflow: hidden;vertical-align:middle;">
+                                <button id="uploadButton" class="btn btn-default fileinput-button" type="button">上传</button>
                                 <input id="uploadFile" type="file"
                                        onchange="loadFile(this.files[0])"
-                                       style="position:absolute;top:0;left:0;font-size:34px; opacity:0"/>
+                                       style="display:none"/>
                             </div>
                             <img id="uploadThumb" src="" style="width:100%;vertical-align: middle;margin-top:6px"/>
                         </div>
@@ -143,7 +139,7 @@
 
                     <hr/>
                     <div class="form-group" style="text-align: center;margin-top:30px">
-                        <button type="submit" class="btn btn-success">确认添加物品</button>
+                        <button type="button" class="btn btn-success">确认添加物品</button>
                     </div>
                 </form>
             </div>
@@ -251,9 +247,25 @@
 
     function init(){
         $('[data-toggle="tooltip"]').tooltip();
+        
+        //点击上传按钮的时候触发上传input点击（上传input太丑了隐藏了）
+        $("#uploadButton").click(function(){
+        	$("#uploadFile").trigger('click');
+        })
 
         $('#addGoods').click(function(){
             $("#addGoodsModal").modal('show');
+        });
+        
+        $("#tag").bind('keypress',function(event){
+            if(event.keyCode == 13) {
+            	var html = '<span style="height:20px;border-radius:13px;padding:6px 10px;margin-right:6px" class="label label-info">'+
+            	$("#tag").val()+
+            	'<i class="fa fa-times" style="color:#FFF;margin-left:6px;cursor:pointer" onclick="delTag(this)"></i>'+
+            	'</span>'
+                $("#tagList").append(html);
+                $("#tag").val('');
+            } 
         });
 
         //关闭对话框后当前文件url清空
@@ -327,6 +339,11 @@
 
             }
         });
+    }
+    
+    function delTag(obj){
+    	console.log($(obj).parent('span'));
+    	$(obj).parent('span').remove();
     }
 
     function loadFile(file){
