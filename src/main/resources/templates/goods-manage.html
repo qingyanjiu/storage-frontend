@@ -179,9 +179,15 @@
 
     var formatter = {
         checkBoxFormatter: function(value,row) {
-            return '<input type="checkbox" name="goodsCheck"/>';
+            return '<input type="checkbox" name="goodsCheck" data-goodsid="'+value+'"/>';
         },
         textFormatter: function(value,row) {
+            var result = value;
+            if(!value)
+                result = '-';
+            return result;
+        },
+        tagFormatter: function(value,row) {
             var result = value;
             if(!value)
                 result = '-';
@@ -237,14 +243,6 @@
             formatter: formatter.typeFormatter
         },
         {
-            title: '备注',
-            field: 'goodsComment',
-            valign: 'middle',
-            halign: 'center',
-            sortable: false,
-            formatter: formatter.textFormatter
-        },
-        {
             title: '价格',
             field: 'price',
             valign: 'middle',
@@ -258,6 +256,22 @@
             valign: 'middle',
             halign: 'center',
             sortable: true,
+            formatter: formatter.textFormatter
+        },
+        {
+            title: '标签',
+            field: 'tag',
+            valign: 'middle',
+            halign: 'center',
+            sortable: true,
+            formatter: formatter.tagFormatter
+        },
+        {
+            title: '备注',
+            field: 'goodsComment',
+            valign: 'middle',
+            halign: 'center',
+            sortable: false,
             formatter: formatter.textFormatter
         },
         {
@@ -376,6 +390,15 @@
             });
         });
 
+        //删除物品
+        $("#deleteGoods").click(function(){
+           var checkedItems = $("input[name='goodsCheck']:checked");
+           for(var i=0;i<checkedItems.length;i++){
+               var item = checkedItems[i];
+               console.log($(item).data('goodsid'));
+           }
+        });
+
         getAllGoodsType();
         initGoodsTable();
     }
@@ -445,7 +468,7 @@
                     },
                     html: true,
                     placement: 'top',
-                    trigger: 'click',
+                    trigger: 'hover',
                     container: 'body'
                 });
             }
