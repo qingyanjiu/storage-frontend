@@ -339,7 +339,14 @@
             && ext !== 'jpeg'
             && ext !== 'png'
         ) {
-            alert('请上传 jpg,jpeg,png 格式的图片');
+            swal("请上传 jpg,jpeg,png 格式的图片", {
+                icon: "warning",
+            });
+            return;
+        } else if (file.size > 1024*1000) {
+            swal("图片大小不能超过1MB", {
+                icon: "warning",
+            });
             return;
         } else {
             $("#upload").showLoading();

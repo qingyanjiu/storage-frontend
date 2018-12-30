@@ -1,5 +1,7 @@
 package stream.mokulive.storagefrontend.controller;
 
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
 import com.auth0.SessionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -70,7 +72,8 @@ public class HomeController {
     protected Map uploadImg(MultipartFile file, HttpServletRequest req) {
         Map result = new HashMap();
         try {
-            Auth0User user = (Auth0User) SessionUtils.get(req, "user");
+            Auth0User user = JSONObject.toJavaObject((JSON) SessionUtils.get(req, "user")
+                    ,Auth0User.class);
             String userId = user.getUserId();
 //            String userId = "weibo|1479540023";
             String fileUrl = aliyunOssHelper.simpleUpload(file, userId);
