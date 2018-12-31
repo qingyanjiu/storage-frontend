@@ -21,7 +21,7 @@
 
 <nav th:include="top::top" class="navbar navbar-inverse navbar-fixed-top top-bar"></nav>
 
-<div role="main" class="container" style="max-width:100% !important;">
+<div role="main" class="container" style="width:100% !important;">
     <div class="content">
         <div class="well" style="padding:20px">
             <div class="row">
@@ -152,6 +152,7 @@
 		crossorigin="anonymous"></script>
 <script src="/bootstrap-3.3.7/js/bootstrap.min.js"></script>
 <script src="/bootstrap-table/bootstrap-table.min.js"></script>
+<script src="/bootstrap-table/bootstrap-table-locale-all.js"></script>
 <script src="/showloading/jquery.showloading.min.js"></script>
 <script src="/bootstrap-select/js/bootstrap-select.min.js"></script>
 <script src="/js/sweetalert.min.js"></script>
@@ -188,9 +189,20 @@
             return result;
         },
         tagFormatter: function(value,row) {
-            var result = value;
-            if(!value)
+            var result = "";
+            var tags = value.split(",");
+            console.log(tags);
+            for(var i=0;i<tags.length;i++){
+                var tag = tags[i];
+                if(tag && tag !== '') {
+                    result += '<span style="height:16px;border-radius:12px;padding:4px 8px;margin-right:6px" class="label label-info">' +
+                            tag +
+                        '</span>';
+                }
+            }
+            if(!value || value === ''){
                 result = '-';
+            }
             return result;
         },
         pictureFormatter: function(value,row){
@@ -263,7 +275,7 @@
             field: 'tag',
             valign: 'middle',
             halign: 'center',
-            sortable: true,
+            sortable: false,
             formatter: formatter.tagFormatter
         },
         {
@@ -435,6 +447,7 @@
 
         $("#goodsTable").bootstrapTable('destroy');
         $("#goodsTable").bootstrapTable({
+            locale:'zh-CN',
             url: urls.listAll,
             columns: columns,
             showColumns: true,
