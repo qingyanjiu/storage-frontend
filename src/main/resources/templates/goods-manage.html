@@ -72,12 +72,13 @@
                         style="position:relative;top:0.4rem;">
                     <i style="color: #b70000" class="glyphicon glyphicon-remove"></i>
                 </button>
-                <h4 class="modal-title">
+                <h4 class="modal-title" id="modalTitle">
                     添加物品
                 </h4>
             </div>
             <div class="modal-body">
                 <form>
+                    <input type="hidden" id="goodsId"/>
                     <div class="form-group">
                         <label for="goodsName">名称 *</label>
                         <input type="text" class="form-control" id="goodsName" placeholder="填写物品名称"/>
@@ -99,10 +100,10 @@
                         <input type="text" class="form-control" id="location" placeholder="描述物品存放位置"/>
                     </div>
                     <div class="form-group">
-                        <label for="price">价格</label>
-                        <div class="input-group" id="price">
+                        <label>价格</label>
+                        <div class="input-group">
                             <span class="input-group-addon">¥</span>
-                            <input type="number" class="form-control" placeholder="物品购买价格"/>
+                            <input type="number" id="price" class="form-control" placeholder="物品购买价格"/>
                         </div>
                     </div>
                     <div class="form-group">
@@ -133,13 +134,14 @@
                                        onchange="loadFile(this.files[0])"
                                        style="display:none"/>
                             </div>
-                            <img id="uploadThumb" src="" style="width:100%;vertical-align: middle;margin-top:6px"/>
+                            <img id="uploadThumb" src="" style="max-width:100%;width:auto;vertical-align: middle;margin-top:6px;display: block;"/>
                         </div>
                     </div>
 
                     <hr/>
                     <div class="form-group" style="text-align: center;margin-top:30px">
                         <button id="submitAddGoodsButton" type="button" class="btn btn-success">确认添加物品</button>
+                        <button id="submitEditGoodsButton" type="button" class="btn btn-success" style="display:none">提交修改</button>
                     </div>
                 </form>
             </div>
@@ -175,6 +177,8 @@
         listAll: backendUrl+"/goods/list",
         getAllTypes: backendUrl+"/type/list",
         createGoods: backendUrl+"/goods/add",
+        editGoods: backendUrl+"/goods/update",
+        findGoods: backendUrl+"/goods/{goodsId}",
         uploadImage: "uploadImg",
     };
 
@@ -191,7 +195,6 @@
         tagFormatter: function(value,row) {
             var result = "";
             var tags = value.split(",");
-            console.log(tags);
             for(var i=0;i<tags.length;i++){
                 var tag = tags[i];
                 if(tag && tag !== '') {
@@ -206,9 +209,15 @@
             return result;
         },
         pictureFormatter: function(value,row){
-            var html = '<span style="cursor:pointer;color:#1b6d85" class="fa fa-television picture-detail" data-url="'+value+'"></span>';
+            var html = '<span style="cursor:pointer;color:#2e6da4" class="fa fa-television picture-detail" data-url="'+value+'"></span>';
             if(!value || value === '')
                 html = '-';
+            return html;
+        },
+        editFormatter: function(value,row){
+            var html = '<span style="cursor:pointer;color:#2e6da4" class="fa fa-edit edit" data-id="'+value+'"></span>' +
+                       '<span style="margin:0 6px;color:#888">|</span>' +
+                       '<span style="cursor:pointer;color:#2e6da4" class="fa fa-picture-o show-plan" data-id="'+value+'"></span>';
             return html;
         }
     }
@@ -295,6 +304,16 @@
             sortable: false,
             visible: true,
             formatter: formatter.pictureFormatter
+        },
+        {
+            title: '操作',
+            field: 'goodsId',
+            valign: 'middle',
+            halign: 'center',
+            align: 'center',
+            sortable: false,
+            visible: true,
+            formatter: formatter.editFormatter
         }
     ];
 
@@ -309,6 +328,7 @@
 
         $('#addGoods').click(function(){
             $("#addGoodsModal").modal('show');
+            initAddModal();
         });
         
         $("#tag").bind('keypress',function(event){
@@ -330,85 +350,23 @@
 
         //添加物品
         $("#submitAddGoodsButton").click(function(){
-            var goodsName = $("#goodsName").val();
-            var goodsType = $("#goodsType").val();
-            var warningText = "";
-            if(!goodsName && goodsName === ''){
-                warningText = "请填写物品名称";
-            }
-            else if(!goodsType && goodsType === ''){
-                warningText = "请选择物品类型"+warningText;
-            }
+            updateGoods('add');
+        });
 
-            if(warningText !== '') {
-                swal(warningText, {
-                    icon: "warning",
-                });
-                return;
-            }
-
-            var owner = $("#owner").val();
-            var location = $("#location").val();
-            var price = $("#price").val();
-            var buyTime = $("#buyTime").val();
-            var comment = $("#comment").val();
-            var tag = "";
-            var tagDatas = $("#tagList").find("span");
-            for(var i=0;i<tagDatas.length;i++) {
-                var data = tagDatas[i];
-                tag += $(data).data('tagvalue')+',';
-            }
-
-            $("#addGoodsModal").showLoading();
-            $.ajax({
-                url: urls.createGoods,
-                type: 'post',
-                contentType: "application/json",
-                dataType:'json',
-                data: JSON.stringify({
-                    userId: userId,
-                    goodsName: goodsName,
-                    typeId: goodsType,
-                    owerName: owner,
-                    picture: currentEditingGoodsImageUrl,
-                    location: location,
-                    tag: tag,
-                    price: price,
-                    buyTime: buyTime,
-                    comment: comment
-                }),
-                success: function (data) {
-                    $("#addGoodsModal").hideLoading();
-                    if(data.success){
-                        swal("添加物品成功", {
-                            icon: "success",
-                        }).then(function(value) {
-                            $("#addGoodsModal").modal('hide');
-                            initGoodsTable();
-                        });
-                    } else {
-                        swal("添加物品失败，请稍后重试", {
-                            icon: "error",
-                        });
-                    }
-                },
-                error: function (e) {
-                    $("#addGoodsModal").hideLoading();
-                    swal("添加物品失败，请稍后重试", {
-                        icon: "error",
-                    });
-                    console.log("添加物品失败"+e);
-                }
-            });
+        //修改物品
+        $("#submitEditGoodsButton").click(function(){
+            updateGoods('edit');
         });
 
         //删除物品
         $("#deleteGoods").click(function(){
-           var checkedItems = $("input[name='goodsCheck']:checked");
-           for(var i=0;i<checkedItems.length;i++){
-               var item = checkedItems[i];
-               console.log($(item).data('goodsid'));
-           }
+            var deleteGoodsIdList = [];
+            var checkedItems = $("input[name='goodsCheck']:checked");
+            for(var i=0;i<checkedItems.length;i++){
+                var item = checkedItems[i];
+                deleteGoodsIdList.push($(item).data('goodsid'));
+            }
+            console.log(deleteGoodsIdList);
         });
 
         getAllGoodsType();
@@ -484,10 +442,94 @@
                     trigger: 'hover',
                     container: 'body'
                 });
+
+                $(".edit").click(function(){
+                    var goodsId = $(this).data('id');
+                    if(goodsId){
+                        $.ajax({
+                            url: urls.findGoods.replace('{goodsId}',goodsId),
+                            type: 'post',
+                            dataType: 'json',
+                            contentType: 'application/json',
+                            success: function (data) {
+                                if(data && data.success) {
+                                    initEditModal();
+
+                                    var goods = data.goods;
+                                    $("#addGoodsModal").modal('show');
+                                    $("#goodsId").val(goods.goodsId);
+                                    $("#goodsName").val(goods.goodsName);
+                                    $("#goodsType").val(goods.typeId);
+                                    $('#goodsType').selectpicker('refresh');
+                                    $("#owner").val(goods.owerName);
+                                    $("#location").val(goods.location);
+                                    $("#price").val(goods.price);
+                                    $("#buyTime").val(goods.buyTime);
+                                    $("#comment").text(goods.goodsComment);
+                                    var tags = goods.tag.split(",");
+                                    for(var i=0;i<tags.length;i++){
+                                        var html = '';
+                                        if(tags[i] && tags[i] !== ''){
+                                            html += '<span data-tagvalue="'+tags[i]+'" ' +
+                                                'style="height:20px;border-radius:13px;padding:6px 10px;margin-right:6px" class="label label-info">'+
+                                                tags[i]+
+                                                '<i class="fa fa-times" style="color:#FFF;margin-left:6px;cursor:pointer" onclick="delTag(this)"></i>'+
+                                                '</span>'
+                                            $("#tagList").append(html);
+                                        }
+                                    }
+                                    $("#uploadThumb").attr('src',goods.picture);
+                                }
+                            },
+                            error: function (e) {
+                                console.error(e);
+                                $("#upload").hideLoading();
+                                swal("获取物品信息失败，请重试", {
+                                    icon: "error",
+                                });
+                            }
+                        });
+                    }
+                })
             }
         });
     }
-    
+
+    function initAddModal(){
+        $("#modalTitle").text('添加物品');
+        $("#goodsName").val('');
+        $("#goodsType").val('');
+        $('#goodsType').selectpicker('refresh');
+        $("#owner").val('');
+        $("#location").val('');
+        $("#price").val('');
+        $("#buyTime").val('');
+        $("#comment").text('');
+        $("#tag").val('');
+        $("#tagList").html('');
+        $("#uploadThumb").attr('src','');
+        $("#submitAddGoodsButton").show();
+        $("#submitEditGoodsButton").hide();
+    }
+
+    function initEditModal(){
+        $("#modalTitle").text('修改物品');
+        $("#goodsId").val('');
+        $("#goodsName").val('');
+        $("#goodsType").val('');
+        $('#goodsType').selectpicker('refresh');
+        $("#owner").val('');
+        $("#location").val('');
+        $("#price").val('');
+        $("#buyTime").val('');
+        $("#comment").text('');
+        $("#tag").val('');
+        $("#tagList").html('');
+        $("#uploadThumb").attr('src','');
+        $("#submitAddGoodsButton").hide();
+        $("#submitEditGoodsButton").show();
+    }
+
     function delTag(obj){
     	console.log($(obj).parent('span'));
     	$(obj).parent('span').remove();
@@ -540,7 +582,7 @@
                     });
                 },
                 error: function (e) {
-                    console.log(e);
+                    console.error(e);
                     $("#upload").hideLoading();
                     swal("上传图片失败，请重试", {
                         icon: "error",
@@ -548,6 +590,109 @@
                 }
             });
         }
+    }
+
+
+    //添加或者修改物品
+    //type = 'add' or 'edit'
+    function updateGoods(type){
+
+        var goodsId = $("#goodsId").val();
+        var goodsName = $("#goodsName").val();
+        var goodsType = $("#goodsType").val();
+        var warningText = "";
+        if(!goodsName && goodsName === ''){
+            warningText = "请填写物品名称";
+        }
+        else if(!goodsType && goodsType === ''){
+            warningText = "请选择物品类型"+warningText;
+        }
+
+        if(warningText !== '') {
+            swal(warningText, {
+                icon: "warning",
+            });
+            return;
+        }
+
+        var owner = $("#owner").val();
+        var location = $("#location").val();
+        var price = $("#price").val();
+        var buyTime = $("#buyTime").val();
+        var comment = $("#comment").val();
+        var tag = "";
+        var tagDatas = $("#tagList").find("span");
+        for(var i=0;i<tagDatas.length;i++) {
+            var data = tagDatas[i];
+            tag += $(data).data('tagvalue')+',';
+        }
+
+        var url = '';
+        var words = '';
+        var data;
+        if(type === 'add') {
+            url = urls.createGoods;
+            words = '添加物品';
+            data = JSON.stringify({
+                userId: userId,
+                goodsName: goodsName,
+                typeId: goodsType,
+                owerName: owner,
+                picture: currentEditingGoodsImageUrl,
+                location: location,
+                tag: tag,
+                price: price,
+                buyTime: buyTime,
+                comment: comment
+            });
+        }
+        else if(type === 'edit') {
+            url = urls.editGoods;
+            words = '修改物品';
+            data = JSON.stringify({
+                goodsId: goodsId,
+                goodsName: goodsName,
+                typeId: goodsType,
+                owerName: owner,
+                picture: currentEditingGoodsImageUrl,
+                location: location,
+                tag: tag,
+                price: price,
+                buyTime: buyTime,
+                comment: comment
+            });
+        }
+
+        $("#addGoodsModal").showLoading();
+        $.ajax({
+            url: url,
+            type: 'post',
+            contentType: "application/json",
+            dataType:'json',
+            data: data,
+            success: function (data) {
+                $("#addGoodsModal").hideLoading();
+                if(data.success){
+                    swal(words+"成功", {
+                        icon: "success",
+                    }).then(function(value) {
+                        $("#addGoodsModal").modal('hide');
+                        initGoodsTable();
+                    });
+                } else {
+                    swal(words+"失败，请稍后重试", {
+                        icon: "error",
+                    });
+                }
+            },
+            error: function (e) {
+                $("#addGoodsModal").hideLoading();
+                swal(words+"失败，请稍后重试", {
+                    icon: "error",
+                });
+                console.log(words+"失败"+e);
+            }
+        });
     }
     //]]>
 </script>
