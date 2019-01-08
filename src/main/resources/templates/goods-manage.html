@@ -374,7 +374,7 @@
                     dangerMode: true
                 }).then(function (value) {
                     if (value) {
-                        deleteGoodsList();
+                        deleteGoodsList(deleteGoodsIdList);
                     }
                 });
             } else {
@@ -553,10 +553,11 @@
     }
 
     function deleteGoodsList(goodsIdList) {
+        $('body').showLoading();
         $.ajax({
             url: urls.deleteGoodsList,
             type: 'post',
-            data: goodsIdList,
+            data: JSON.stringify(goodsIdList),
             dataType: 'json',
             contentType: 'application/json',
             success: function (data) {
@@ -573,9 +574,11 @@
                         buttons: {true:"好的"}
                     });
                 }
+                $('body').hideLoading();
             },
             error: function (e) {
                 console.error(e);
+                $('body').hideLoading();
                 swal("删除物品失败，请重试", {
                     icon: "error",
                     buttons: {true:"好的"}
