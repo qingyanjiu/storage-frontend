@@ -178,6 +178,7 @@
         getAllTypes: backendUrl+"/type/list",
         createGoods: backendUrl+"/goods/add",
         editGoods: backendUrl+"/goods/update",
+        deleteGoodsList: backendUrl+"/goods/deleteGoodsList",
         findGoods: backendUrl+"/goods/{goodsId}",
         uploadImage: "uploadImg",
     };
@@ -366,7 +367,22 @@
                 var item = checkedItems[i];
                 deleteGoodsIdList.push($(item).data('goodsid'));
             }
-            console.log(deleteGoodsIdList);
+            if(deleteGoodsIdList.length > 0) {
+                swal("确认要删除已勾选的物品吗?", {
+                    icon: "warning",
+                    buttons: ["我再想想","决定了,删除"],
+                    dangerMode: true
+                }).then(function (value) {
+                    if (value) {
+                        deleteGoodsList();
+                    }
+                });
+            } else {
+                swal("还没有勾选要删除的物品哟", {
+                    icon: "warning",
+                    buttons: {true:"好的"}
+                })
+            }
         });
 
         getAllGoodsType();
@@ -486,6 +502,7 @@
                                 $("#upload").hideLoading();
                                 swal("获取物品信息失败，请重试", {
                                     icon: "error",
+                                    buttons: {true:"好的"}
                                 });
                             }
                         });
@@ -535,11 +552,44 @@
     	$(obj).parent('span').remove();
     }
 
+    function deleteGoodsList(goodsIdList) {
+        $.ajax({
+            url: urls.deleteGoodsList,
+            type: 'post',
+            data: goodsIdList,
+            dataType: 'json',
+            contentType: 'application/json',
+            success: function (data) {
+                if(data && data.success) {
+                    swal("删除物品成功", {
+                        icon: "success",
+                        buttons: {true:"好的"}
+                    }).then(function(value) {
+                        initGoodsTable();
+                    });
+                } else {
+                    swal("删除物品失败，请重试", {
+                        icon: "error",
+                        buttons: {true:"好的"}
+                    });
+                }
+            },
+            error: function (e) {
+                console.error(e);
+                swal("删除物品失败，请重试", {
+                    icon: "error",
+                    buttons: {true:"好的"}
+                });
+            }
+        });
+    }
+
     function loadFile(file){
         var ext = file.name.substring(file.name.lastIndexOf(".")+1,file.name.length);
         if (!file) {
             swal("请选择图片", {
                 icon: "warning",
+                buttons: {true:"好的"}
             });
             return;
         } else if (
@@ -549,11 +599,13 @@
         ) {
             swal("请上传 jpg,jpeg,png 格式的图片", {
                 icon: "warning",
+                buttons: {true:"好的"}
             });
             return;
         } else if (file.size > 1024*1000) {
             swal("图片大小不能超过1MB", {
                 icon: "warning",
+                buttons: {true:"好的"}
             });
             return;
         } else {
@@ -579,6 +631,7 @@
                     $("#upload").hideLoading();
                     swal("上传图片成功", {
                         icon: "success",
+                        buttons: {true:"好的"}
                     });
                 },
                 error: function (e) {
@@ -586,6 +639,7 @@
                     $("#upload").hideLoading();
                     swal("上传图片失败，请重试", {
                         icon: "error",
+                        buttons: {true:"好的"}
                     });
                 }
             });
@@ -611,6 +665,7 @@
         if(warningText !== '') {
             swal(warningText, {
                 icon: "warning",
+                buttons: {true:"好的"}
             });
             return;
         }
@@ -675,6 +730,7 @@
                 if(data.success){
                     swal(words+"成功", {
                         icon: "success",
+                        buttons: {true:"好的"}
                     }).then(function(value) {
                         $("#addGoodsModal").modal('hide');
                         initGoodsTable();
@@ -682,6 +738,7 @@
                 } else {
                     swal(words+"失败，请稍后重试", {
                         icon: "error",
+                        buttons: {true:"好的"}
                     });
                 }
             },
@@ -689,6 +746,7 @@
                 $("#addGoodsModal").hideLoading();
                 swal(words+"失败，请稍后重试", {
                     icon: "error",
+                    buttons: {true:"好的"}
                 });
                 console.log(words+"失败"+e);
             }
