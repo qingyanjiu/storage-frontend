@@ -31,14 +31,14 @@
                             <h2>
                                 <span>建筑管理</span>
                                 <div class="nav navbar-right panel_toolbox" style="min-width:20px;margin:0;float:right">
-                                    <span class="clickable-icon" style="margin-right:6px;" id="addBuilding">
+                                    <span class="clickable-icon" style="margin-right:6px;" id="add">
                                         <span class="collapse-link" data-toggle="tooltip" data-container="body"
                                               data-placement="top"
                                               title="新增建筑">
                                             <i class="fa fa-plus-circle"></i>
                                         </span>
                                     </span>
-                                    <span class="clickable-icon" id="deleteBuilding">
+                                    <span class="clickable-icon" id="delete">
                                         <span class="collapse-link" data-toggle="tooltip" data-container="body"
                                               data-placement="top"
                                               title="删除建筑">
@@ -50,8 +50,8 @@
                             <div class="clearfix"></div>
                         </div>
                         <div class="x_content chart-content">
-                            <div style="min-height:100%;padding: 0 0 20px 0;" id="goodsTableContent">
-                                <table id="goodsTable"
+                            <div style="min-height:100%;padding: 0 0 20px 0;" id="tableContent">
+                                <table id="table"
                                        class="table table-condensed table-striped standard-table"
                                 ></table>
                             </div>
@@ -63,7 +63,7 @@
     </div>
 </div>
 
-<div class="modal fade bs-example-modal-lg" id="addGoodsModal" role="dialog" tabindex="-1" data-backdrop="false">
+<div class="modal fade bs-example-modal-lg" id="addModal" role="dialog" tabindex="-1" data-backdrop="false">
     <div class="modal-dialog modal-lg" style="width: 400px;">
         <div class="modal-content">
             <div class="modal-header">
@@ -72,58 +72,23 @@
                     <i style="color: #b70000" class="glyphicon glyphicon-remove"></i>
                 </button>
                 <h4 class="modal-title" id="modalTitle">
-                    添加物品
+                    添加建筑
                 </h4>
             </div>
             <div class="modal-body">
                 <form>
-                    <input type="hidden" id="goodsId"/>
+                    <input type="hidden" id="id"/>
                     <div class="form-group">
-                        <label for="goodsName">名称 *</label>
-                        <input type="text" class="form-control" id="goodsName" placeholder="填写物品名称"/>
-                    </div>
-                    <div class="form-group">
-                        <label for="typeList" style="display:block">分类 *</label>
-                        <div id="typeList">
-                            <select class="selectpicker" data-width="fit" id="goodsType">
-                                <option value=""></option>
-                            </select>
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <label for="owner">所有者</label>
-                        <input type="text" class="form-control" id="owner" placeholder="所有者姓名，或者爸爸妈妈等"/>
-                    </div>
-                    <div class="form-group">
-                        <label for="location">存放位置</label>
-                        <input type="text" class="form-control" id="location" placeholder="描述物品存放位置"/>
-                    </div>
-                    <div class="form-group">
-                        <label>价格</label>
-                        <div class="input-group">
-                            <span class="input-group-addon">¥</span>
-                            <input type="number" id="price" class="form-control" placeholder="物品购买价格"/>
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <label for="buyTime">购买时间</label>
-                        <input type="date" class="form-control" id="buyTime" placeholder="物品购买时间"/>
+                        <label for="name">名称 *</label>
+                        <input type="text" class="form-control" id="name" placeholder="填写建筑名称"/>
                     </div>
                     <div class="form-group">
                         <label for="comment">备注</label>
-                        <textarea class="form-control" id="comment" placeholder="物品备注信息" style="max-width:100%"></textarea>
-                    </div>
-                    <div class="form-group">
-                        <label for="tagContent">标签</label><span style="margin-left:10px;font-size:12px;color:#888">( 输入后回车添加标签 )</span>
-                        <div id="tagContent">
-                            <input class="form-control" id="tag" style="width:100px;"/>
-                            <div id="tagList" class="nice-scroll" style="padding:10px 0 10px 0;overflow-x:auto;overflow-y:hidden">
-                            </div>
-                        </div>
+                        <textarea class="form-control" id="comment" placeholder="建筑备注信息" style="max-width:100%"></textarea>
                     </div>
 
                     <div class="form-group" id="upload">
-                        <label style="display:block">物品图片</label>
+                        <label style="display:block">平面图</label>
                         <div>
                             <div class="file-container"
                                  style="display:inline-block;position:relative;
@@ -139,8 +104,8 @@
 
                     <hr/>
                     <div class="form-group" style="text-align: center;margin-top:30px">
-                        <button id="submitAddGoodsButton" type="button" class="btn btn-success">确认添加物品</button>
-                        <button id="submitEditGoodsButton" type="button" class="btn btn-success" style="display:none">提交修改</button>
+                        <button id="submitAddButton" type="button" class="btn btn-success">确认添加建筑</button>
+                        <button id="submitEditButton" type="button" class="btn btn-success" style="display:none">提交修改</button>
                     </div>
                 </form>
             </div>
@@ -166,9 +131,421 @@
         init();
     });
 
+    var backendUrl = [[${backendUrl}]];
+    var userId = [[${user.userId}]];
+
+    var currentEditingImageUrl = "";
+
+    var urls = {
+        listAll: backendUrl+"/building/list",
+        create: backendUrl+"/building/add",
+        edit: backendUrl+"/building/update",
+        delete: backendUrl+"/building/deleteGoodsList",
+        find: backendUrl+"/building/{id}",
+        uploadImage: "uploadBuildingImg"
+    };
+
+    var formatter = {
+        checkBoxFormatter: function(value,row) {
+            return '<input type="checkbox" name="check" data-id="'+value+'"/>';
+        },
+        textFormatter: function(value,row) {
+            var result = value;
+            if(!value)
+                result = '-';
+            return result;
+        },
+        pictureFormatter: function(value,row){
+            var html = '<span style="cursor:pointer;color:#2e6da4" class="fa fa-television picture-detail" data-url="'+value+'"></span>';
+            if(!value || value === '')
+                html = '-';
+            return html;
+        },
+        editFormatter: function(value,row){
+            var html = '<span style="cursor:pointer;color:#2e6da4" class="fa fa-edit edit" data-id="'+value+'"></span>' +
+                '<span style="margin:0 6px;color:#888">|</span>' +
+                '<span style="cursor:pointer;color:#2e6da4" class="fa fa-picture-o show-plan" data-id="'+value+'"></span>';
+            return html;
+        }
+    };
+
+    var columns = [
+        {
+            title: '',
+            field: 'buildingId',
+            valign: 'middle',
+            halign: 'center',
+            align: 'center',
+            sortable: false,
+            formatter: formatter.checkBoxFormatter
+        }, {
+            title: '建筑名称',
+            field: 'buildingName',
+            valign: 'middle',
+            halign: 'center',
+            sortable: true,
+            formatter: formatter.textFormatter
+        },
+        {
+            title: '备注',
+            field: 'comment',
+            valign: 'middle',
+            halign: 'center',
+            sortable: false,
+            formatter: formatter.textFormatter
+        },
+        {
+            title: '预览',
+            field: 'planPicture',
+            valign: 'middle',
+            halign: 'center',
+            align: 'center',
+            sortable: false,
+            visible: true,
+            formatter: formatter.pictureFormatter
+        },
+        {
+            title: '操作',
+            field: 'buildingId',
+            valign: 'middle',
+            halign: 'center',
+            align: 'center',
+            sortable: false,
+            visible: true,
+            formatter: formatter.editFormatter
+        }
+    ];
 
     function init(){
+        $('[data-toggle="tooltip"]').tooltip();
 
+        //点击上传按钮的时候触发上传input点击（上传input太丑了隐藏了）
+        $("#uploadButton").click(function(){
+            $("#uploadFile").trigger('click');
+        })
+
+        $('#add').click(function(){
+            $("#addModal").modal('show');
+            initAddModal();
+        });
+        
+        //关闭对话框后当前文件url清空
+        $('#addModal').on('hidden.bs.modal', function (e) {
+            currentEditingImageUrl = "";
+        });
+
+        //添加
+        $("#submitAddButton").click(function(){
+            update('add');
+        });
+
+        //修改建筑
+        $("#submitEditButton").click(function(){
+            update('edit');
+        });
+
+        //删除建筑
+        $("#delete").click(function(){
+            var deleteIdList = [];
+            var checkedItems = $("input[name='check']:checked");
+            for(var i=0;i<checkedItems.length;i++){
+                var item = checkedItems[i];
+                deleteIdList.push($(item).data('id'));
+            }
+            if(deleteIdList.length > 0) {
+                swal("确认要删除已勾选的建筑吗?", {
+                    icon: "warning",
+                    buttons: ["我再想想","决定了,删除"],
+                    dangerMode: true
+                }).then(function (value) {
+                    if (value) {
+                        del(deleteIdList);
+                    }
+                });
+            } else {
+                swal("还没有勾选要删除的建筑哟", {
+                    icon: "warning",
+                    buttons: {true:"好的"}
+                })
+            }
+        });
+
+        initTable();
+    }
+
+    //初始化列表
+    function initTable() {
+
+        $("#table").bootstrapTable('destroy');
+        $("#table").bootstrapTable({
+            locale:'zh-CN',
+            url: urls.listAll,
+            columns: columns,
+            showColumns: true,
+            contentType: "application/x-www-form-urlencoded",
+            pageSize: 10,
+            dataType:'json',
+            method: "post",
+            search: true,
+            escape: false,
+            pageList: [10, 20],
+            pagination: true,
+            queryParams: function (params) {
+                return {
+                    userId: userId
+                };
+            },
+            onPostHeader: function(result){
+
+            },
+            onLoadSuccess: function (data) {
+                if(data && data.buildingList)
+                    $("#table").bootstrapTable('load',data.buildingList);
+            },
+            onColumnSwitch: function(field, checked) {
+
+            },
+            onPostBody: function (data) {
+                $(".picture-detail").popover({
+                    content: function(){
+                        return '<img src="'+$(this).data('url')+'" style="width:220px;"/>';
+                    },
+                    html: true,
+                    placement: 'bottom',
+                    trigger: 'hover',
+                    container: 'body'
+                });
+
+                $(".edit").click(function(){
+                    var id = $(this).data('id');
+                    if(id){
+                        $.ajax({
+                            url: urls.find.replace('{id}',id),
+                            type: 'post',
+                            dataType: 'json',
+                            contentType: 'application/json',
+                            success: function (data) {
+                                if(data && data.success) {
+                                    initEditModal();
+
+                                    var building = data.building;
+                                    $("#addModal").modal('show');
+                                    $("#id").val(building.buildingId);
+                                    $("#name").val(building.buildingName);
+                                    $("#comment").text(building.comment);
+                                    $("#uploadThumb").attr('src',building.planPicture);
+                                }
+                            },
+                            error: function (e) {
+                                console.error(e);
+                                $("#upload").hideLoading();
+                                swal("获取建筑信息失败，请重试", {
+                                    icon: "error",
+                                    buttons: {true:"好的"}
+                                });
+                            }
+                        });
+                    }
+                })
+            }
+        });
+    }
+
+    function initAddModal(){
+        $("#modalTitle").text('添加建筑');
+        $("#name").val('');
+        $("#comment").text('');
+        $("#uploadThumb").attr('src','');
+        $("#submitAddButton").show();
+        $("#submitEditButton").hide();
+    }
+
+    function initEditModal(){
+        $("#modalTitle").text('修改建筑');
+        $("#id").val('');
+        $("#name").val('');
+        $("#comment").text('');
+        $("#uploadThumb").attr('src','');
+        $("#submitAddButton").hide();
+        $("#submitEditButton").show();
+    }
+
+    function del(idList) {
+        $('body').showLoading();
+        $.ajax({
+            url: urls.delete,
+            type: 'post',
+            data: JSON.stringify(idList),
+            dataType: 'json',
+            contentType: 'application/json',
+            success: function (data) {
+                if(data && data.success) {
+                    swal("删除建筑成功", {
+                        icon: "success",
+                        buttons: {true:"好的"}
+                    }).then(function(value) {
+                        initTable();
+                    });
+                } else {
+                    swal("删除建筑失败，请重试", {
+                        icon: "error",
+                        buttons: {true:"好的"}
+                    });
+                }
+                $('body').hideLoading();
+            },
+            error: function (e) {
+                console.error(e);
+                $('body').hideLoading();
+                swal("删除建筑失败，请重试", {
+                    icon: "error",
+                    buttons: {true:"好的"}
+                });
+            }
+        });
+    }
+
+    function loadFile(file){
+        var ext = file.name.substring(file.name.lastIndexOf(".")+1,file.name.length);
+        if (!file) {
+            swal("请选择图片", {
+                icon: "warning",
+                buttons: {true:"好的"}
+            });
+            return;
+        } else if (
+            ext !== 'jpg'
+            && ext !== 'jpeg'
+            && ext !== 'png'
+        ) {
+            swal("请上传 jpg,jpeg,png 格式的图片", {
+                icon: "warning",
+                buttons: {true:"好的"}
+            });
+            return;
+        } else if (file.size > 1024*3000) {
+            swal("图片大小不能超过3MB", {
+                icon: "warning",
+                buttons: {true:"好的"}
+            });
+            return;
+        } else {
+            $("#upload").showLoading();
+            var formData = new FormData();
+            formData.append("file", file);
+            formData.append("name", file.name);
+            $.ajax({
+                url: urls.uploadImage,
+                type: 'post',
+                data: formData,
+                dataType: 'json',
+                fileElementId: 'fileContent',
+                // 告诉jQuery不要去处理发送的数据
+                processData: false,
+                // 告诉jQuery不要去设置Content-Type请求头
+                contentType: false,
+                cache: false,
+                traditional: true,
+                success: function (data) {
+                    $('#uploadThumb').attr('src', data.fileUrl);
+                    currentEditingImageUrl = data.fileUrl;
+                    $("#upload").hideLoading();
+                    swal("上传图片成功", {
+                        icon: "success",
+                        buttons: {true:"好的"}
+                    });
+                },
+                error: function (e) {
+                    console.error(e);
+                    $("#upload").hideLoading();
+                    swal("上传图片失败，请重试", {
+                        icon: "error",
+                        buttons: {true:"好的"}
+                    });
+                }
+            });
+        }
+    }
+
+
+    //添加或者修改
+    //type = 'add' or 'edit'
+    function update(type){
+
+        var id = $("#id").val();
+        var name = $("#name").val();
+        var warningText = "";
+        if(!name && name === ''){
+            warningText = "请填写建筑名称";
+        }
+
+        if(warningText !== '') {
+            swal(warningText, {
+                icon: "warning",
+                buttons: {true:"好的"}
+            });
+            return;
+        }
+
+        var comment = $("#comment").val();
+
+        var url = '';
+        var words = '';
+        var data;
+        if(type === 'add') {
+            url = urls.create;
+            words = '添加建筑';
+            data = JSON.stringify({
+                userId: userId,
+                buildingName: name,
+                planPicture: currentEditingImageUrl,
+                comment: comment
+            });
+        }
+        else if(type === 'edit') {
+            url = urls.edit;
+            words = '修改建筑';
+            data = JSON.stringify({
+                buildingId: id,
+                buildingName: name,
+                planPicture: currentEditingImageUrl,
+                comment: comment
+            });
+        }
+
+        $("#addModal").showLoading();
+        $.ajax({
+            url: url,
+            type: 'post',
+            contentType: "application/json",
+            dataType:'json',
+            data: data,
+            success: function (data) {
+                $("#addModal").hideLoading();
+                if(data.success){
+                    swal(words+"成功", {
+                        icon: "success",
+                        buttons: {true:"好的"}
+                    }).then(function(value) {
+                        $("#addModal").modal('hide');
+                        initTable();
+                    });
+                } else {
+                    swal(words+"失败，请稍后重试", {
+                        icon: "error",
+                        buttons: {true:"好的"}
+                    });
+                }
+            },
+            error: function (e) {
+                $("#addModal").hideLoading();
+                swal(words+"失败，请稍后重试", {
+                    icon: "error",
+                    buttons: {true:"好的"}
+                });
+                console.log(words+"失败"+e);
+            }
+        });
     }
 
     //]]>

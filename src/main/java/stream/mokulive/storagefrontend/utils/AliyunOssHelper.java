@@ -13,6 +13,9 @@ import java.util.Date;
 @Service
 public class AliyunOssHelper {
 
+    public static final String UPLOAD_TYPE_GOODS = "1";
+    public static final String UPLOAD_TYPE_BUILDING = "2";
+
     @Value("${accessKeyId}")
     private String accessKeyId;
 
@@ -22,14 +25,23 @@ public class AliyunOssHelper {
     @Value("${bucketName}")
     private String bucketName;
 
-    @Value("${directory}")
-    private String directory;
+    @Value("${goodsDirectory}")
+    private String goodsDirectory;
 
-    public String simpleUpload(MultipartFile file, String userId) throws IOException {
+    @Value("${buildingDirectory}")
+    private String buildingDirectory;
+
+    public String uploadImg(MultipartFile file, String userId,String type) throws IOException {
         String timeStamp = new SimpleDateFormat("yyyy-MM-dd-HH:mm:ss").format(new Date());
         String endpoint = "http://oss-cn-shanghai.aliyuncs.com";
         String area = "oss-cn-shanghai.aliyuncs.com";
         String fileUrl = "https://" + bucketName + "." + area + "/";
+        String directory = "";
+        if(UPLOAD_TYPE_GOODS.equals(type)){
+            directory = goodsDirectory;
+        } else if(UPLOAD_TYPE_BUILDING.equals(type)){
+            directory = buildingDirectory;
+        }
 
         // 创建OSSClient实例。
         OSSClient ossClient = new OSSClient(endpoint, accessKeyId, accessKeySecret);

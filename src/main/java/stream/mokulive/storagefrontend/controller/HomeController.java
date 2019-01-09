@@ -67,16 +67,33 @@ public class HomeController {
         return "goods-manage";
     }
 
-    @RequestMapping(value = "/uploadImg", method = RequestMethod.POST)
+    @RequestMapping(value = "/uploadGoodsImg", method = RequestMethod.POST)
     @ResponseBody
-    protected Map uploadImg(MultipartFile file, HttpServletRequest req) {
+    protected Map uploadGoodsImg(MultipartFile file, HttpServletRequest req) {
         Map result = new HashMap();
         try {
             Auth0User user = JSONObject.toJavaObject((JSON) SessionUtils.get(req, "user")
                     ,Auth0User.class);
             String userId = user.getUserId();
-//            String userId = "weibo|1479540023";
-            String fileUrl = aliyunOssHelper.simpleUpload(file, userId);
+            String fileUrl = aliyunOssHelper.uploadImg(file, userId, AliyunOssHelper.UPLOAD_TYPE_GOODS);
+            result.put("success",true);
+            result.put("fileUrl",fileUrl);
+        } catch (IOException e) {
+            result.put("success",false);
+            e.printStackTrace();
+        }
+        return result;
+    }
+
+    @RequestMapping(value = "/uploadBuildingImg", method = RequestMethod.POST)
+    @ResponseBody
+    protected Map uploadBuildingImg(MultipartFile file, HttpServletRequest req) {
+        Map result = new HashMap();
+        try {
+            Auth0User user = JSONObject.toJavaObject((JSON) SessionUtils.get(req, "user")
+                    ,Auth0User.class);
+            String userId = user.getUserId();
+            String fileUrl = aliyunOssHelper.uploadImg(file, userId, AliyunOssHelper.UPLOAD_TYPE_BUILDING);
             result.put("success",true);
             result.put("fileUrl",fileUrl);
         } catch (IOException e) {
