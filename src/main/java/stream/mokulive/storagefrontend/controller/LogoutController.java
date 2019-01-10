@@ -26,7 +26,11 @@ public class LogoutController {
     protected String logout(final HttpServletRequest req) {
         logger.debug("Performing logout");
         invalidateSession(req);
-        String returnTo = req.getScheme() + "://" + req.getServerName() + ":" + req.getServerPort();
+        String returnTo = "";
+        int port = req.getServerPort();
+        returnTo = req.getScheme() + "://" + req.getServerName() + ":" + req.getServerPort();
+        if(443 == port || 80 == port)
+            returnTo = req.getScheme() + "://" + req.getServerName();
         String logoutUrl = String.format("https://%s/v2/logout?client_id=%s&returnTo=%s", domain, clientId, returnTo);
         return "redirect:" + logoutUrl;
     }

@@ -18,7 +18,7 @@ public class ErrorController implements org.springframework.boot.autoconfigure.w
 
     @RequestMapping("/error")
     protected String error(final RedirectAttributes redirectAttributes) throws IOException {
-        logger.error("Handling error");
+        logger.error("Handling error:"+redirectAttributes.toString());
         redirectAttributes.addFlashAttribute("error", true);
         return "redirect:/login";
     }
