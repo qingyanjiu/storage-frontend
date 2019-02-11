@@ -5,10 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"/>
     <meta name="description" content=""/>
     <meta name="author" content=""/>
-    <link href="/css/bootstrap.min.css" rel="stylesheet"/>
-    <link href="/css/bootstrap-theme.min.css" rel="stylesheet"/>
-    <link href="/css/main/style.css" rel="stylesheet"/>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-slider/10.4.2/css/bootstrap-slider.min.css" rel="stylesheet"/>
+    <link href="/font-awesome-4.7.0/css/font-awesome.min.css" rel="stylesheet"/>
+    <link href="/bootstrap-3.3.7/css/bootstrap.min.css" rel="stylesheet"/>
+    <link href="/bootstrap-3.3.7/css/bootstrap-theme.min.css" rel="stylesheet"/>
+    <link href="/mycss/style.css" rel="stylesheet"/>
+    <link href="/showloading/showloading.css" rel="stylesheet"/>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-slider/10.4.2/css/bootstrap-slider.min.css"
+          rel="stylesheet"/>
 
     <title>储物整理</title>
 </head>
@@ -18,41 +21,76 @@
 <nav th:include="top::top" class="navbar navbar-inverse navbar-fixed-top top-bar"></nav>
 
 <div role="main" class="container" style="max-width:100% !important;">
+    <div class="content" style="padding:20px">
+        <div class="row">
+            <div class="col-lg-4 col-xs-12">
+                <div>
+                    <label for="zoom">图片缩放</label><br/>
+                    <input id="zoom" type="text"
+                           data-provide="slider"
+                           data-slider-ticks="[1, 1.2, 1.4]"
+                           data-slider-ticks-labels='["小", "中", "大"]'
+                           data-slider-min="1"
+                           data-slider-max="1.4"
+                           data-slider-step="0.2"
+                           data-slider-value="1"
+                           data-slider-tooltip="hide"/>
+                </div>
 
-    <div class="content row">
-        <div class="col-lg-4 col-xs-12">
-            <div>
-                <label for="zoom">图片缩放</label><br/>
-                <input id="zoom" type="text"
-                       data-provide="slider"
-                       data-slider-ticks="[1, 1.2, 1.4]"
-                       data-slider-ticks-labels='["小", "中", "大"]'
-                       data-slider-min="1"
-                       data-slider-max="1.4"
-                       data-slider-step="0.2"
-                       data-slider-value="1"
-                       data-slider-tooltip="hide" />
+                <div id="edit" style="display: none">
+                    <button type="button" class="btn btn-secondary">Check</button>
+                </div>
             </div>
-
-            <div id="edit" style="display: none">
-                <button type="button" class="btn btn-secondary">Check</button>
-            </div>
-        </div>
-        <div class="col-lg-8 col-xs-12">
-            <div id="planImage" style="
-                width:672px;
-                height:647px;">
+            <div class="col-lg-8 col-xs-12">
+                <div id="planImage">
+                </div>
             </div>
         </div>
     </div>
-
 </div>
 
+<div class="modal fade bs-example-modal-lg" id="addModal" role="dialog" tabindex="-1" data-backdrop="false">
+    <div class="modal-dialog modal-lg" style="width: 400px;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true"
+                        style="position:relative;top:0.4rem;">
+                    <i style="color: #b70000" class="glyphicon glyphicon-remove"></i>
+                </button>
+                <h4 class="modal-title" id="modalTitle">
+                    添加建筑
+                </h4>
+            </div>
+            <div class="modal-body">
+                <form>
+                    <input type="hidden" id="id"/>
+                    <div class="form-group">
+                        <label for="name">名称 *</label>
+                        <input type="text" class="form-control" id="name" placeholder="填写热点名称"/>
+                    </div>
+                    <div class="form-group">
+                        <label for="comment">备注</label>
+                        <textarea class="form-control" id="comment" placeholder="热点备注信息" style="max-width:100%"></textarea>
+                    </div>
+
+                    <hr/>
+                    <div class="form-group" style="text-align: center;margin-top:30px">
+                        <button id="submitAddButton" type="button" class="btn btn-success">确认添加热点</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
 
 <script src="https://code.jquery.com/jquery-3.3.1.min.js"
-		integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8="
-		crossorigin="anonymous"></script>
-<script src="/js/bootstrap.min.js"></script>
+        integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8="
+        crossorigin="anonymous"></script>
+<script src="/bootstrap-3.3.7/js/bootstrap.min.js"></script>
+<script src="/showloading/jquery.showloading.min.js"></script>
+<script src="/js/sweetalert.min.js"></script>
+<script src="/js/moment.min.js"></script>
+<script src="/myjs/custom.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-slider/10.4.2/bootstrap-slider.min.js"></script>
 
 <script th:inline="javascript">
@@ -66,80 +104,213 @@
     var svgHeight = 647;
     var zoomNumber = 1;
 
-    $(function() {
+    var backendUrl = [[${backendUrl}]];
+    var userId = [[${user.userId}]];
+    var buildingId = [[${buildingId}]];
+    var svgViewboxScale = [[${svgViewboxScale}]];
 
-        $.ajax({
-            url: 'https://mokulive.oss-cn-shanghai.aliyuncs.com/house.svg',
-            type: "get",
-            dataType: "text"
-        }).done(function (svg) {
-            $("#planImage").html(svg);
-        });
+    var urls = {
+        add: backendUrl+'/hotPoint/add',
+        list: backendUrl+'/hotPoint/list',
+    }
 
-        $("#planImage").mousedown(function(e){
-            xStart=e.pageX-$(this).offset().left; //获取当前鼠标相对div的X坐标
-            yStart=e.pageY-$(this).offset().top; //获取当前鼠标相对div的Y坐标
-            if(xStart && yStart) {
+    $(function () {
+
+        initPlan();
+
+        function initPlan() {
+            $.ajax({
+                url: 'https://mokulive.oss-cn-shanghai.aliyuncs.com/house.svg',
+                type: "get",
+                dataType: "text"
+            }).done(function (svg) {
+                $("#planImage").html(svg);
+                var width = $("svg").eq(0).attr("viewBox").split(' ')[2]+'px';
+                var height = $("svg").eq(0).attr("viewBox").split(' ')[3]+'px';
+                $("#planImage").css('width',width);
+                $("#planImage").css('height',height);
+                $("#planImage").showLoading();
+                $.ajax({
+                    url: urls.list,
+                    type: 'post',
+                    dataType:'json',
+                    data: {
+                        userId: userId,
+                        buildingId: buildingId
+                    },
+                    success: function (data) {
+                        $("#planImage").hideLoading();
+                        if(data.success){
+                            var hotPointList = data.hotPointList;
+//                            $.each(hotPointList,function(index,item){
+//                                var path = '<g><path d="M' + item.xstart*svgViewboxScale / zoomNumber + ' ' + item.ystart*svgViewboxScale / zoomNumber +
+//                                    ' L' + item.xend*svgViewboxScale / zoomNumber + ' ' + item.ystart*svgViewboxScale / zoomNumber +
+//                                    ' L' + item.xend*svgViewboxScale / zoomNumber + ' ' + item.yend*svgViewboxScale / zoomNumber +
+//                                    ' L' + item.xstart*svgViewboxScale / zoomNumber + ' ' + item.yend*svgViewboxScale / zoomNumber + ' Z" fill="rgba(253,161,103,0.6)"/></g>';
+//                                $("#planImage").find("svg").append(path);
+//                            });
+//                            $("#planImage").find("svg").html($("#planImage").find("svg").html());
+                        } else {
+                            console.error(data);
+                        }
+                    },
+                    error: function (e) {
+                        $("#planImage").hideLoading();
+                        console.error(e);
+                    }
+                });
+            });
+        }
+
+        $("#planImage").mousedown(function (e) {
+            xStart = e.pageX - $(this).offset().left; //获取当前鼠标相对div的X坐标
+            yStart = e.pageY - $(this).offset().top; //获取当前鼠标相对div的Y坐标
+            if (xStart && yStart) {
                 $("#selectionArea").remove();
-                xEnd = xStart+1;
-                yEnd = yStart+1;
-                var path = '<g id="selectionArea"><path d="M'+xStart*10/zoomNumber+' '+yStart*10/zoomNumber +
-                    ' L'+xEnd*10/zoomNumber+' '+yStart*10/zoomNumber +
-                    ' L'+xEnd*10/zoomNumber+' '+yEnd*10/zoomNumber +
-                    ' L'+xStart*10/zoomNumber+' '+yEnd*10/zoomNumber + ' Z" fill="rgba(253,161,103,0.6)"/></g>';
+//                xEnd = xStart + 1;
+//                yEnd = yStart + 1;
+                xEnd = xStart;
+                yEnd = yStart;
+                var path = '<g id="selectionArea"><path d="M' + xStart * 10 / zoomNumber + ' ' + yStart * 10 / zoomNumber +
+                    ' L' + xEnd * 10 / zoomNumber + ' ' + yStart * 10 / zoomNumber +
+                    ' L' + xEnd * 10 / zoomNumber + ' ' + yEnd * 10 / zoomNumber +
+                    ' L' + xStart * 10 / zoomNumber + ' ' + yEnd * 10 / zoomNumber + ' Z" fill="rgba(253,161,103,0.6)"/></g>';
                 $("#planImage").find("svg").append(path);
                 $("#planImage").find("svg").html($("#planImage").find("svg").html());
             }
         });
 
-        $("#planImage").mousemove(function(e){
-            xEnd=e.pageX-$(this).offset().left; //获取当前鼠标相对div的X坐标
-            yEnd=e.pageY-$(this).offset().top; //获取当前鼠标相对div的Y坐标
-            if(xStart && yStart) {
+        $("#planImage").mousemove(function (e) {
+            xEnd = e.pageX - $(this).offset().left; //获取当前鼠标相对div的X坐标
+            yEnd = e.pageY - $(this).offset().top; //获取当前鼠标相对div的Y坐标
+            if (xStart && yStart) {
                 $("#selectionArea").html(
-                    '<path d="M'+xStart*10/zoomNumber+' '+yStart*10/zoomNumber +
-                    ' L'+xEnd*10/zoomNumber+' '+yStart*10/zoomNumber +
-                    ' L'+xEnd*10/zoomNumber+' '+yEnd*10/zoomNumber +
-                    ' L'+xStart*10/zoomNumber+' '+yEnd*10/zoomNumber + ' Z"' +
-					' fill="rgba(253,161,103,0.6)"/>'
-				);
+                    '<path d="M' + xStart * 10 / zoomNumber + ' ' + yStart * 10 / zoomNumber +
+                    ' L' + xEnd * 10 / zoomNumber + ' ' + yStart * 10 / zoomNumber +
+                    ' L' + xEnd * 10 / zoomNumber + ' ' + yEnd * 10 / zoomNumber +
+                    ' L' + xStart * 10 / zoomNumber + ' ' + yEnd * 10 / zoomNumber + ' Z"' +
+                    ' fill="rgba(253,161,103,0.6)"/>'
+                );
                 $("#planImage").find("svg").html($("#planImage").find("svg").html());
             }
         });
 
-        $("#planImage").mouseup(function(e){
-            console.log(xStart+','+yStart+','+xEnd+','+yEnd);
-            xEnd=e.pageX-$(this).offset().left; //获取当前鼠标相对div的X坐标
-            yEnd=e.pageY-$(this).offset().top; //获取当前鼠标相对div的Y坐标
-            if(xStart && yStart){
-                if(xStart === xEnd && yStart === yEnd){
+        $("#planImage").mouseup(function (e) {
+            console.log(xStart + ',' + yStart + ',' + xEnd + ',' + yEnd);
+            xEnd = e.pageX - $(this).offset().left; //获取当前鼠标相对div的X坐标
+            yEnd = e.pageY - $(this).offset().top; //获取当前鼠标相对div的Y坐标
+            if (xStart && yStart) {
+                if (xStart === xEnd && yStart === yEnd) {
+                    xStart = 0;
+                    yStart = 0;
+                    xEnd = 0;
+                    yEnd = 0;
                     $("#selectionArea").remove();
                 }
-
-	            
-                xStart = 0;
-                yStart = 0;
-                xEnd = 0;
-                yEnd = 0;
             }
 
-            if($("#selectionArea").attr("id")){
-                $("#edit").show();
-            }else{
-                $("#edit").hide();
+            if ($("#selectionArea").attr("id")) {
+                $("#addModal").modal('show');
+            } else {
+                $("#addModal").modal('hide');
             }
         });
 
-        $("#zoom").change(function(){
+        //隐藏modal之后,清除坐标以及选中框
+        $('#addModal').on('hidden.bs.modal', function (event) {
+            xStart = 0;
+            yStart = 0;
+            xEnd = 0;
+            yEnd = 0;
+            $("#selectionArea").remove();
+        });
+
+        $("#zoom").change(function () {
             var val = $(this).val();
             zoomNumber = Number(val);
-            $("#planImage").css("width",svgWidth*zoomNumber);
-            $("#planImage").css("height",svgHeight*zoomNumber);
-            if($("#selectionArea").attr("id")){
+            $("#planImage").css("width", svgWidth * zoomNumber);
+            $("#planImage").css("height", svgHeight * zoomNumber);
+            if ($("#selectionArea").attr("id")) {
                 $("#selectionArea").remove();
             }
-            $("#edit").hide();
+            $("#addModal").modal('hide');
         });
+
+        $("#submitAddButton").click(function(){
+            update();
+        });
+
+
+        //添加热点
+        function update(){
+
+            var name = $("#name").val();
+            var warningText = "";
+            if(!name && name === ''){
+                warningText = "请填写热点名称";
+            }
+
+            if(warningText !== '') {
+                swal(warningText, {
+                    icon: "warning",
+                    buttons: {true:"好的"}
+                });
+                return;
+            }
+
+            var comment = $("#comment").val();
+
+            var url = '';
+            var words = '';
+            var data;
+            url = urls.add;
+            words = '添加热点';
+            data = JSON.stringify({
+                userId: userId,
+                buildingId: buildingId,
+                comment: comment,
+                hotPointName: name,
+                xstart: xStart,
+                xend: xEnd,
+                ystart: yStart,
+                yend: yEnd
+            });
+
+            $("#addModal").showLoading();
+            $.ajax({
+                url: url,
+                type: 'post',
+                contentType: "application/json",
+                dataType:'json',
+                data: data,
+                success: function (data) {
+                    $("#addModal").hideLoading();
+                    if(data.success){
+                        swal(words+"成功", {
+                            icon: "success",
+                            buttons: {true:"好的"}
+                        }).then(function(value) {
+                            $("#addModal").modal('hide');
+                            initPlan();
+                        });
+                    } else {
+                        swal(words+"失败，请稍后重试", {
+                            icon: "error",
+                            buttons: {true:"好的"}
+                        });
+                    }
+                },
+                error: function (e) {
+                    $("#addModal").hideLoading();
+                    swal(words+"失败，请稍后重试", {
+                        icon: "error",
+                        buttons: {true:"好的"}
+                    });
+                    console.log(words+"失败"+e);
+                }
+            });
+        }
+
     });
     //]]>
 </script>

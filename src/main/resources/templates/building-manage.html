@@ -163,9 +163,16 @@
             return html;
         },
         editFormatter: function(value,row){
-            var html = '<span style="cursor:pointer;color:#2e6da4" class="fa fa-edit edit" data-id="'+value+'"></span>' +
-                '<span style="margin:0 6px;color:#888">|</span>' +
-                '<span style="cursor:pointer;color:#2e6da4" class="fa fa-map-marker show-plan" data-id="'+value+'"></span>';
+            var html = '<span style="cursor:pointer;color:#2e6da4" class="fa fa-edit edit" data-id="'+value+'"></span>';
+            var planPicture = row.planPicture;
+            if(planPicture && planPicture !== '') {
+                var editHotpoint = '<span style="margin:0 6px;color:#888">|</span>' +
+                    '<a style="cursor:pointer;color:#2e6da4" ' +
+                    'href="./hotPointManage?buildingId='+value+'">' +
+                    '<i class="fa fa-map-marker"></i>' +
+                    '</a>';
+                html += editHotpoint;
+            }
             return html;
         }
     };
@@ -351,22 +358,6 @@
                     }
                 });
 
-                $(".show-plan").click(function(){
-                    var id = $(this).data('id');
-                    if(id){
-                        var buildingData = data.filter(function(item){return item.buildingId==id});
-                        var planPicture = buildingData[0].planPicture;
-                        console.log(planPicture);
-                        if(planPicture && planPicture !== '') {
-                            window.open("./hotpointManage");
-                        } else {
-                            swal("还没有上传平面图，无法进行热点管理", {
-                                icon: "info",
-                                buttons: {true:"好的"}
-                            });
-                        }
-                    }
-                });
             }
         });
     }

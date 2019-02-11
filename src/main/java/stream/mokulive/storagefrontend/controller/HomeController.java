@@ -28,6 +28,9 @@ public class HomeController {
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
+    @Value("${svg.viewbox.scale}")
+    private int svgViewboxScale;
+
     @Autowired
     private AliyunOssHelper aliyunOssHelper;
 
@@ -37,6 +40,7 @@ public class HomeController {
     @RequestMapping(value = "/home", method = RequestMethod.GET)
     protected String home(Model model, final HttpServletRequest req) {
         Object user = SessionUtils.get(req, "user");
+        model.addAttribute("svgViewboxScale", svgViewboxScale);
         model.addAttribute("user", user);
         model.addAttribute("backendUrl", backendUrl);
         return "view";
@@ -51,8 +55,10 @@ public class HomeController {
     }
 
     @RequestMapping(value = "/hotPointManage", method = RequestMethod.GET)
-    protected String hotPointManage(Model model, final HttpServletRequest req) {
+    protected String hotPointManage(Model model, final HttpServletRequest req, String buildingId) {
         Object user = SessionUtils.get(req, "user");
+        model.addAttribute("buildingId", buildingId);
+        model.addAttribute("svgViewboxScale", svgViewboxScale);
         model.addAttribute("user", user);
         model.addAttribute("backendUrl", backendUrl);
         return "hotpoint-manage";
