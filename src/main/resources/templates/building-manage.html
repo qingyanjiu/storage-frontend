@@ -165,7 +165,7 @@
         editFormatter: function(value,row){
             var html = '<span style="cursor:pointer;color:#2e6da4" class="fa fa-edit edit" data-id="'+value+'"></span>' +
                 '<span style="margin:0 6px;color:#888">|</span>' +
-                '<span style="cursor:pointer;color:#2e6da4" class="fa fa-picture-o show-plan" data-id="'+value+'"></span>';
+                '<span style="cursor:pointer;color:#2e6da4" class="fa fa-map-marker show-plan" data-id="'+value+'"></span>';
             return html;
         }
     };
@@ -320,6 +320,9 @@
                 $(".edit").click(function(){
                     var id = $(this).data('id');
                     if(id){
+                        initEditModal();
+                        $("#addModal").modal('show');
+                        $("#addModal").showLoading();
                         $.ajax({
                             url: urls.find.replace('{id}',id),
                             type: 'post',
@@ -327,15 +330,13 @@
                             contentType: 'application/json',
                             success: function (data) {
                                 if(data && data.success) {
-                                    initEditModal();
-
                                     var building = data.building;
-                                    $("#addModal").modal('show');
                                     $("#id").val(building.buildingId);
                                     $("#name").val(building.buildingName);
-                                    $("#comment").text(building.comment);
+                                    $("#comment").val(building.comment);
                                     $("#uploadThumb").attr('src',building.planPicture);
                                 }
+                                $("#addModal").hideLoading();
                             },
                             error: function (e) {
                                 console.error(e);
@@ -344,10 +345,28 @@
                                     icon: "error",
                                     buttons: {true:"好的"}
                                 });
+                                $("#addModal").hideLoading();
                             }
                         });
                     }
-                })
+                });
+
+                $(".show-plan").click(function(){
+                    var id = $(this).data('id');
+                    if(id){
+                        var buildingData = data.filter(function(item){return item.buildingId==id});
+                        var planPicture = buildingData[0].planPicture;
+                        console.log(planPicture);
+                        if(planPicture && planPicture !== '') {
+                            window.open("./hotpointManage");
+                        } else {
+                            swal("还没有上传平面图，无法进行热点管理", {
+                                icon: "info",
+                                buttons: {true:"好的"}
+                            });
+                        }
+                    }
+                });
             }
         });
     }
@@ -355,7 +374,7 @@
     function initAddModal(){
         $("#modalTitle").text('添加建筑');
         $("#name").val('');
-        $("#comment").text('');
+        $("#comment").val('');
         $("#uploadThumb").attr('src','');
         $("#submitAddButton").show();
         $("#submitEditButton").hide();
@@ -365,7 +384,7 @@
         $("#modalTitle").text('修改建筑');
         $("#id").val('');
         $("#name").val('');
-        $("#comment").text('');
+        $("#comment").val('');
         $("#uploadThumb").attr('src','');
         $("#submitAddButton").hide();
         $("#submitEditButton").show();
