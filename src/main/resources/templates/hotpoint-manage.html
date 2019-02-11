@@ -49,7 +49,7 @@
     </div>
 </div>
 
-<div class="modal fade bs-example-modal-lg" id="addModal" role="dialog" tabindex="-1" data-backdrop="false">
+<div class="modal fade bs-example-modal-lg" id="addModal" role="dialog" tabindex="-1" data-backdrop="false" style="top:100px">
     <div class="modal-dialog modal-lg" style="width: 400px;">
         <div class="modal-content">
             <div class="modal-header">
@@ -58,7 +58,7 @@
                     <i style="color: #b70000" class="glyphicon glyphicon-remove"></i>
                 </button>
                 <h4 class="modal-title" id="modalTitle">
-                    添加建筑
+                    添加热点
                 </h4>
             </div>
             <div class="modal-body">
@@ -125,8 +125,8 @@
                 dataType: "text"
             }).done(function (svg) {
                 $("#planImage").html(svg);
-                var width = $("svg").eq(0).attr("viewBox").split(' ')[2]+'px';
-                var height = $("svg").eq(0).attr("viewBox").split(' ')[3]+'px';
+                var width = Number($("svg").eq(0).attr("viewBox").split(' ')[2])/svgViewboxScale+'px';
+                var height = Number($("svg").eq(0).attr("viewBox").split(' ')[3])/svgViewboxScale+'px';
                 $("#planImage").css('width',width);
                 $("#planImage").css('height',height);
                 $("#planImage").showLoading();
@@ -142,14 +142,21 @@
                         $("#planImage").hideLoading();
                         if(data.success){
                             var hotPointList = data.hotPointList;
-//                            $.each(hotPointList,function(index,item){
-//                                var path = '<g><path d="M' + item.xstart*svgViewboxScale / zoomNumber + ' ' + item.ystart*svgViewboxScale / zoomNumber +
-//                                    ' L' + item.xend*svgViewboxScale / zoomNumber + ' ' + item.ystart*svgViewboxScale / zoomNumber +
-//                                    ' L' + item.xend*svgViewboxScale / zoomNumber + ' ' + item.yend*svgViewboxScale / zoomNumber +
-//                                    ' L' + item.xstart*svgViewboxScale / zoomNumber + ' ' + item.yend*svgViewboxScale / zoomNumber + ' Z" fill="rgba(253,161,103,0.6)"/></g>';
-//                                $("#planImage").find("svg").append(path);
-//                            });
-//                            $("#planImage").find("svg").html($("#planImage").find("svg").html());
+                            $.each(hotPointList,function(index,item){
+                                var path = '<g>' +
+                                    '<path d="M' + item.xstart*svgViewboxScale / zoomNumber + ' ' + item.ystart*svgViewboxScale / zoomNumber +
+                                    ' L' + item.xend*svgViewboxScale / zoomNumber + ' ' + item.ystart*svgViewboxScale / zoomNumber +
+                                    ' L' + item.xend*svgViewboxScale / zoomNumber + ' ' + item.yend*svgViewboxScale / zoomNumber +
+                                    ' L' + item.xstart*svgViewboxScale / zoomNumber + ' ' + item.yend*svgViewboxScale / zoomNumber + ' Z" fill="rgba(253,161,103,0.6)">' +
+                                    '</path>'+
+                                    '<text style="font-size:'+Math.abs(item.xend-item.xstart)/8*svgViewboxScale / zoomNumber+'px;' +
+                                    'text-anchor: middle;dominant-baseline: middle;fill:#666"'+
+                                    'x="'+(Number(item.xstart)+Number(item.xend))/2*svgViewboxScale / zoomNumber+'" ' +
+                                    'y="'+(Number(item.ystart)+Number(item.yend))/2*svgViewboxScale / zoomNumber+'" >'+item.hotPointName+'</text>'+
+                                    '</g>';
+                                $("#planImage").find("svg").append(path);
+                            });
+                            $("#planImage").find("svg").html($("#planImage").find("svg").html());
                         } else {
                             console.error(data);
                         }
