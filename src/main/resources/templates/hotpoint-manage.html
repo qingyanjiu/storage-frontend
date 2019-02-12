@@ -100,8 +100,8 @@
     var xEnd = 0;
     var yEnd = 0;
 
-    var svgWidth = 672;
-    var svgHeight = 647;
+    var svgWidth;
+    var svgHeight;
     var zoomNumber = 1;
 
     var backendUrl = [[${backendUrl}]];
@@ -133,10 +133,10 @@
                 dataType: "text"
             }).done(function (svg) {
                 $("#planImage").html(svg);
-                var width = Number($("svg").eq(0).attr("viewBox").split(' ')[2])/svgViewboxScale+'px';
-                var height = Number($("svg").eq(0).attr("viewBox").split(' ')[3])/svgViewboxScale+'px';
-                $("#planImage").css('width',width);
-                $("#planImage").css('height',height);
+                svgWidth = Number($("svg").eq(0).attr("viewBox").split(' ')[2])/svgViewboxScale;
+                svgHeight = Number($("svg").eq(0).attr("viewBox").split(' ')[3])/svgViewboxScale;
+                $("#planImage").css('width',svgWidth * zoomNumber+'px');
+                $("#planImage").css('height',svgHeight * zoomNumber+'px');
                 $("#planImage").showLoading();
                 $.ajax({
                     url: urls.list,
@@ -154,10 +154,10 @@
                                 var path = '<g style="cursor: pointer" class="hot-point" data-id="'+item.id+'"' +
                                     'data-toggle="tooltip" data-container="body" data-placement="left" title="'+item.hotPointName+'">' +
                                     '<path ' +
-                                    ' d="M' + item.xstart*svgViewboxScale / zoomNumber + ' ' + item.ystart*svgViewboxScale / zoomNumber +
-                                    ' L' + item.xend*svgViewboxScale / zoomNumber + ' ' + item.ystart*svgViewboxScale / zoomNumber +
-                                    ' L' + item.xend*svgViewboxScale / zoomNumber + ' ' + item.yend*svgViewboxScale / zoomNumber +
-                                    ' L' + item.xstart*svgViewboxScale / zoomNumber + ' ' + item.yend*svgViewboxScale / zoomNumber + ' Z" fill="rgba(253,161,103,0.6)">' +
+                                    ' d="M' + item.xstart*svgViewboxScale + ' ' + item.ystart*svgViewboxScale +
+                                    ' L' + item.xend*svgViewboxScale + ' ' + item.ystart*svgViewboxScale +
+                                    ' L' + item.xend*svgViewboxScale + ' ' + item.yend*svgViewboxScale +
+                                    ' L' + item.xstart*svgViewboxScale + ' ' + item.yend*svgViewboxScale + ' Z" fill="rgba(253,161,103,0.6)">' +
                                     '</path>'+
 //                                    '<text style="font-size:'+Math.abs(item.xend-item.xstart)/8*svgViewboxScale / zoomNumber+'px;' +
 //                                    'text-anchor: middle;dominant-baseline: middle;fill:#666"'+
@@ -294,10 +294,10 @@
                 buildingId: buildingId,
                 comment: comment,
                 hotPointName: name,
-                xstart: xStart,
-                xend: xEnd,
-                ystart: yStart,
-                yend: yEnd
+                xstart: xStart / zoomNumber,
+                xend: xEnd / zoomNumber,
+                ystart: yStart / zoomNumber,
+                yend: yEnd / zoomNumber
             });
 
             $("#addModal").showLoading();

@@ -61,6 +61,9 @@
 
 <script th:inline="javascript">
     /*<![CDATA[*/
+    var svgWidth;
+    var svgHeight;
+
     var zoomNumber = 1;
 
     var backendUrl = [[${backendUrl}]];
@@ -91,10 +94,10 @@
                 dataType: "text"
             }).done(function (svg) {
                 $("#planImage").html(svg);
-                var width = Number($("svg").eq(0).attr("viewBox").split(' ')[2])/svgViewboxScale+'px';
-                var height = Number($("svg").eq(0).attr("viewBox").split(' ')[3])/svgViewboxScale+'px';
-                $("#planImage").css('width',width);
-                $("#planImage").css('height',height);
+                svgWidth = Number($("svg").eq(0).attr("viewBox").split(' ')[2])/svgViewboxScale;
+                svgHeight = Number($("svg").eq(0).attr("viewBox").split(' ')[3])/svgViewboxScale;
+                $("#planImage").css('width',svgWidth * zoomNumber+'px');
+                $("#planImage").css('height',svgHeight * zoomNumber+'px');
                 $("#planImage").showLoading();
                 $.ajax({
                     url: urls.list,
@@ -137,6 +140,18 @@
                 });
             });
         }
+
+
+        $("#zoom").change(function () {
+            var val = $(this).val();
+            zoomNumber = Number(val);
+            $("#planImage").css("width", svgWidth * zoomNumber);
+            $("#planImage").css("height", svgHeight * zoomNumber);
+            if ($("#selectionArea").attr("id")) {
+                $("#selectionArea").remove();
+            }
+            $("#addModal").modal('hide');
+        });
 
     });
     //]]>
