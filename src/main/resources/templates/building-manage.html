@@ -172,6 +172,14 @@
                     '<i class="fa fa-map-marker"></i>' +
                     '</a>';
                 html += editHotpoint;
+
+                var viewHotpoint = '<span style="margin:0 6px;color:#888">|</span>' +
+                    '<a style="cursor:pointer;color:#2e6da4" ' +
+                    'href="./home?buildingId='+value+'">' +
+                    '<i class="fa fa-eye"></i>' +
+                    '</a>';
+
+                html += viewHotpoint;
             }
             return html;
         }

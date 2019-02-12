@@ -118,6 +118,14 @@
 
         initPlan();
 
+        function refreshSvg(){
+            $("#planImage").find("svg").html($("#planImage").find("svg").html());
+            $('[data-toggle="tooltip"]').tooltip();
+            $(".hot-point").click(function(event){
+                console.log($(this).data("id"));
+            });
+        }
+
         function initPlan() {
             $.ajax({
                 url: 'https://mokulive.oss-cn-shanghai.aliyuncs.com/house.svg',
@@ -143,20 +151,23 @@
                         if(data.success){
                             var hotPointList = data.hotPointList;
                             $.each(hotPointList,function(index,item){
-                                var path = '<g>' +
-                                    '<path d="M' + item.xstart*svgViewboxScale / zoomNumber + ' ' + item.ystart*svgViewboxScale / zoomNumber +
+                                var path = '<g style="cursor: pointer" class="hot-point" data-id="'+item.id+'"' +
+                                    'data-toggle="tooltip" data-container="body" data-placement="left" title="'+item.hotPointName+'">' +
+                                    '<path ' +
+                                    ' d="M' + item.xstart*svgViewboxScale / zoomNumber + ' ' + item.ystart*svgViewboxScale / zoomNumber +
                                     ' L' + item.xend*svgViewboxScale / zoomNumber + ' ' + item.ystart*svgViewboxScale / zoomNumber +
                                     ' L' + item.xend*svgViewboxScale / zoomNumber + ' ' + item.yend*svgViewboxScale / zoomNumber +
                                     ' L' + item.xstart*svgViewboxScale / zoomNumber + ' ' + item.yend*svgViewboxScale / zoomNumber + ' Z" fill="rgba(253,161,103,0.6)">' +
                                     '</path>'+
-                                    '<text style="font-size:'+Math.abs(item.xend-item.xstart)/8*svgViewboxScale / zoomNumber+'px;' +
-                                    'text-anchor: middle;dominant-baseline: middle;fill:#666"'+
-                                    'x="'+(Number(item.xstart)+Number(item.xend))/2*svgViewboxScale / zoomNumber+'" ' +
-                                    'y="'+(Number(item.ystart)+Number(item.yend))/2*svgViewboxScale / zoomNumber+'" >'+item.hotPointName+'</text>'+
+//                                    '<text style="font-size:'+Math.abs(item.xend-item.xstart)/8*svgViewboxScale / zoomNumber+'px;' +
+//                                    'text-anchor: middle;dominant-baseline: middle;fill:#666"'+
+//                                    'x="'+(Number(item.xstart)+Number(item.xend))/2*svgViewboxScale / zoomNumber+'" ' +
+//                                    'y="'+(Number(item.ystart)+Number(item.yend))/2*svgViewboxScale / zoomNumber+'" >'+item.hotPointName+'</text>'+
                                     '</g>';
                                 $("#planImage").find("svg").append(path);
                             });
-                            $("#planImage").find("svg").html($("#planImage").find("svg").html());
+                           refreshSvg();
+
                         } else {
                             console.error(data);
                         }
@@ -174,16 +185,14 @@
             yStart = e.pageY - $(this).offset().top; //获取当前鼠标相对div的Y坐标
             if (xStart && yStart) {
                 $("#selectionArea").remove();
-//                xEnd = xStart + 1;
-//                yEnd = yStart + 1;
                 xEnd = xStart;
                 yEnd = yStart;
-                var path = '<g id="selectionArea"><path d="M' + xStart * 10 / zoomNumber + ' ' + yStart * 10 / zoomNumber +
-                    ' L' + xEnd * 10 / zoomNumber + ' ' + yStart * 10 / zoomNumber +
-                    ' L' + xEnd * 10 / zoomNumber + ' ' + yEnd * 10 / zoomNumber +
-                    ' L' + xStart * 10 / zoomNumber + ' ' + yEnd * 10 / zoomNumber + ' Z" fill="rgba(253,161,103,0.6)"/></g>';
-                $("#planImage").find("svg").append(path);
-                $("#planImage").find("svg").html($("#planImage").find("svg").html());
+//                var path = '<g id="selectionArea"><path d="M' + xStart * 10 / zoomNumber + ' ' + yStart * 10 / zoomNumber +
+//                    ' L' + xEnd * 10 / zoomNumber + ' ' + yStart * 10 / zoomNumber +
+//                    ' L' + xEnd * 10 / zoomNumber + ' ' + yEnd * 10 / zoomNumber +
+//                    ' L' + xStart * 10 / zoomNumber + ' ' + yEnd * 10 / zoomNumber + ' Z" fill="rgba(253,161,103,0.6)"/></g>';
+//                $("#planImage").find("svg").append(path);
+//                $("#planImage").find("svg").html($("#planImage").find("svg").html());
             }
         });
 
@@ -191,19 +200,27 @@
             xEnd = e.pageX - $(this).offset().left; //获取当前鼠标相对div的X坐标
             yEnd = e.pageY - $(this).offset().top; //获取当前鼠标相对div的Y坐标
             if (xStart && yStart) {
-                $("#selectionArea").html(
-                    '<path d="M' + xStart * 10 / zoomNumber + ' ' + yStart * 10 / zoomNumber +
-                    ' L' + xEnd * 10 / zoomNumber + ' ' + yStart * 10 / zoomNumber +
-                    ' L' + xEnd * 10 / zoomNumber + ' ' + yEnd * 10 / zoomNumber +
-                    ' L' + xStart * 10 / zoomNumber + ' ' + yEnd * 10 / zoomNumber + ' Z"' +
-                    ' fill="rgba(253,161,103,0.6)"/>'
-                );
-                $("#planImage").find("svg").html($("#planImage").find("svg").html());
+                if(!$("#selectionArea").attr('id')){
+                    var path = '<g id="selectionArea"><path d="M' + xStart * 10 / zoomNumber + ' ' + yStart * 10 / zoomNumber +
+                        ' L' + xEnd * 10 / zoomNumber + ' ' + yStart * 10 / zoomNumber +
+                        ' L' + xEnd * 10 / zoomNumber + ' ' + yEnd * 10 / zoomNumber +
+                        ' L' + xStart * 10 / zoomNumber + ' ' + yEnd * 10 / zoomNumber + ' Z" fill="rgba(253,161,103,0.6)"/></g>';
+                    $("#planImage").find("svg").prepend(path);
+                } else {
+                    $("#selectionArea").html(
+                        '<path d="M' + xStart * 10 / zoomNumber + ' ' + yStart * 10 / zoomNumber +
+                        ' L' + xEnd * 10 / zoomNumber + ' ' + yStart * 10 / zoomNumber +
+                        ' L' + xEnd * 10 / zoomNumber + ' ' + yEnd * 10 / zoomNumber +
+                        ' L' + xStart * 10 / zoomNumber + ' ' + yEnd * 10 / zoomNumber + ' Z"' +
+                        ' fill="rgba(253,161,103,0.6)"/>'
+                    );
+                }
+                refreshSvg();
             }
         });
 
         $("#planImage").mouseup(function (e) {
-            console.log(xStart + ',' + yStart + ',' + xEnd + ',' + yEnd);
+//            console.log(xStart + ',' + yStart + ',' + xEnd + ',' + yEnd);
             xEnd = e.pageX - $(this).offset().left; //获取当前鼠标相对div的X坐标
             yEnd = e.pageY - $(this).offset().top; //获取当前鼠标相对div的Y坐标
             if (xStart && yStart) {

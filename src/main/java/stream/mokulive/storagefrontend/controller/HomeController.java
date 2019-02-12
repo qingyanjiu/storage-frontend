@@ -38,8 +38,9 @@ public class HomeController {
     private String backendUrl;
 
     @RequestMapping(value = "/home", method = RequestMethod.GET)
-    protected String home(Model model, final HttpServletRequest req) {
+    protected String home(Model model, final HttpServletRequest req, String buildingId) {
         Object user = SessionUtils.get(req, "user");
+        model.addAttribute("buildingId", buildingId);
         model.addAttribute("svgViewboxScale", svgViewboxScale);
         model.addAttribute("user", user);
         model.addAttribute("backendUrl", backendUrl);

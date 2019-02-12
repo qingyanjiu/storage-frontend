@@ -42,15 +42,12 @@
                 </div>
             </div>
             <div class="col-lg-8 col-xs-12">
-                <div id="planImage" style="
-                width:672px;
-                height:647px;">
+                <div id="planImage">
                 </div>
             </div>
         </div>
     </div>
 </div>
-
 
 <script src="https://code.jquery.com/jquery-3.3.1.min.js"
         integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8="
@@ -64,91 +61,83 @@
 
 <script th:inline="javascript">
     /*<![CDATA[*/
-    var xStart = 0;
-    var yStart = 0;
-    var xEnd = 0;
-    var yEnd = 0;
-
-    var svgWidth = 672;
-    var svgHeight = 647;
     var zoomNumber = 1;
 
+    var backendUrl = [[${backendUrl}]];
+    var userId = [[${user.userId}]];
+    var buildingId = [[${buildingId}]];
     var svgViewboxScale = [[${svgViewboxScale}]];
+
+    var urls = {
+        list: backendUrl+'/hotPoint/list',
+    }
 
     $(function () {
 
-        $.ajax({
-            url: 'https://mokulive.oss-cn-shanghai.aliyuncs.com/house.svg',
-            type: "get",
-            dataType: "text"
-        }).done(function (svg) {
-            $("#planImage").html(svg);
-        });
+        initPlan();
 
-        $("#planImage").mousedown(function (e) {
-            xStart = e.pageX - $(this).offset().left; //获取当前鼠标相对div的X坐标
-            yStart = e.pageY - $(this).offset().top; //获取当前鼠标相对div的Y坐标
-            if (xStart && yStart) {
-                $("#selectionArea").remove();
-                xEnd = xStart + 1;
-                yEnd = yStart + 1;
-                var path = '<g id="selectionArea"><path d="M' + xStart * 10 / zoomNumber + ' ' + yStart * 10 / zoomNumber +
-                    ' L' + xEnd * 10 / zoomNumber + ' ' + yStart * 10 / zoomNumber +
-                    ' L' + xEnd * 10 / zoomNumber + ' ' + yEnd * 10 / zoomNumber +
-                    ' L' + xStart * 10 / zoomNumber + ' ' + yEnd * 10 / zoomNumber + ' Z" fill="rgba(253,161,103,0.6)"/></g>';
-                $("#planImage").find("svg").append(path);
-                $("#planImage").find("svg").html($("#planImage").find("svg").html());
-            }
-        });
+        function refreshSvg(){
+            $("#planImage").find("svg").html($("#planImage").find("svg").html());
+            $('[data-toggle="tooltip"]').tooltip();
+            $(".hot-point").click(function(event){
+                console.log($(this).data("id"));
+            });
+        }
 
-        $("#planImage").mousemove(function (e) {
-            xEnd = e.pageX - $(this).offset().left; //获取当前鼠标相对div的X坐标
-            yEnd = e.pageY - $(this).offset().top; //获取当前鼠标相对div的Y坐标
-            if (xStart && yStart) {
-                $("#selectionArea").html(
-                    '<path d="M' + xStart * 10 / zoomNumber + ' ' + yStart * 10 / zoomNumber +
-                    ' L' + xEnd * 10 / zoomNumber + ' ' + yStart * 10 / zoomNumber +
-                    ' L' + xEnd * 10 / zoomNumber + ' ' + yEnd * 10 / zoomNumber +
-                    ' L' + xStart * 10 / zoomNumber + ' ' + yEnd * 10 / zoomNumber + ' Z"' +
-                    ' fill="rgba(253,161,103,0.6)"/>'
-                );
-                $("#planImage").find("svg").html($("#planImage").find("svg").html());
-            }
-        });
+        function initPlan() {
+            $.ajax({
+                url: 'https://mokulive.oss-cn-shanghai.aliyuncs.com/house.svg',
+                type: "get",
+                dataType: "text"
+            }).done(function (svg) {
+                $("#planImage").html(svg);
+                var width = Number($("svg").eq(0).attr("viewBox").split(' ')[2])/svgViewboxScale+'px';
+                var height = Number($("svg").eq(0).attr("viewBox").split(' ')[3])/svgViewboxScale+'px';
+                $("#planImage").css('width',width);
+                $("#planImage").css('height',height);
+                $("#planImage").showLoading();
+                $.ajax({
+                    url: urls.list,
+                    type: 'post',
+                    dataType:'json',
+                    data: {
+                        userId: userId,
+                        buildingId: buildingId
+                    },
+                    success: function (data) {
+                        $("#planImage").hideLoading();
+                        if(data.success){
+                            var hotPointList = data.hotPointList;
+                            $.each(hotPointList,function(index,item){
+                                var path = '<g style="cursor: pointer" class="hot-point" data-id="'+item.id+'"' +
+                                    'data-toggle="tooltip" data-container="body" data-placement="left" title="'+item.hotPointName+'">' +
+                                    '<path ' +
+                                    ' d="M' + item.xstart*svgViewboxScale / zoomNumber + ' ' + item.ystart*svgViewboxScale / zoomNumber +
+                                    ' L' + item.xend*svgViewboxScale / zoomNumber + ' ' + item.ystart*svgViewboxScale / zoomNumber +
+                                    ' L' + item.xend*svgViewboxScale / zoomNumber + ' ' + item.yend*svgViewboxScale / zoomNumber +
+                                    ' L' + item.xstart*svgViewboxScale / zoomNumber + ' ' + item.yend*svgViewboxScale / zoomNumber + ' Z" fill="rgba(253,161,103,0.6)">' +
+                                    '</path>'+
+                                    //                                    '<text style="font-size:'+Math.abs(item.xend-item.xstart)/8*svgViewboxScale / zoomNumber+'px;' +
+                                    //                                    'text-anchor: middle;dominant-baseline: middle;fill:#666"'+
+                                    //                                    'x="'+(Number(item.xstart)+Number(item.xend))/2*svgViewboxScale / zoomNumber+'" ' +
+                                    //                                    'y="'+(Number(item.ystart)+Number(item.yend))/2*svgViewboxScale / zoomNumber+'" >'+item.hotPointName+'</text>'+
+                                    '</g>';
+                                $("#planImage").find("svg").append(path);
+                            });
+                            refreshSvg();
 
-        $("#planImage").mouseup(function (e) {
-            console.log(xStart + ',' + yStart + ',' + xEnd + ',' + yEnd);
-            xEnd = e.pageX - $(this).offset().left; //获取当前鼠标相对div的X坐标
-            yEnd = e.pageY - $(this).offset().top; //获取当前鼠标相对div的Y坐标
-            if (xStart && yStart) {
-                if (xStart === xEnd && yStart === yEnd) {
-                    $("#selectionArea").remove();
-                }
+                        } else {
+                            console.error(data);
+                        }
+                    },
+                    error: function (e) {
+                        $("#planImage").hideLoading();
+                        console.error(e);
+                    }
+                });
+            });
+        }
 
-
-                xStart = 0;
-                yStart = 0;
-                xEnd = 0;
-                yEnd = 0;
-            }
-
-            if ($("#selectionArea").attr("id")) {
-                $("#edit").show();
-            } else {
-                $("#edit").hide();
-            }
-        });
-
-        $("#zoom").change(function () {
-            var val = $(this).val();
-            zoomNumber = Number(val);
-            $("#planImage").css("width", svgWidth * zoomNumber);
-            $("#planImage").css("height", svgHeight * zoomNumber);
-            if ($("#selectionArea").attr("id")) {
-                $("#selectionArea").remove();
-            }
-            $("#edit").hide();
-        });
     });
     //]]>
 </script>

@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"/>
+    <meta name="description" content=""/>
+    <meta name="author" content=""/>
+    <link href="/font-awesome-4.7.0/css/font-awesome.min.css" rel="stylesheet"/>
+    <link href="/bootstrap-3.3.7/css/bootstrap.min.css" rel="stylesheet"/>
+    <link href="/bootstrap-3.3.7/css/bootstrap-theme.min.css" rel="stylesheet"/>
+    <link href="/mycss/style.css" rel="stylesheet"/>
+    <link href="/showloading/showloading.css" rel="stylesheet"/>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-slider/10.4.2/css/bootstrap-slider.min.css"
+          rel="stylesheet"/>
+
+    <title>储物整理</title>
+</head>
+
+<body>
+
+<nav th:include="top::top" class="navbar navbar-inverse navbar-fixed-top top-bar"></nav>
+
+<div role="main" class="container" style="max-width:100% !important;">
+    <div class="content" style="padding:20px">
+        <div class="row">
+            <div class="col-lg-4 col-xs-12">
+                <div>
+                    <label for="zoom">图片缩放</label><br/>
+                    <input id="zoom" type="text"
+                           data-provide="slider"
+                           data-slider-ticks="[1, 1.2, 1.4]"
+                           data-slider-ticks-labels='["小", "中", "大"]'
+                           data-slider-min="1"
+                           data-slider-max="1.4"
+                           data-slider-step="0.2"
+                           data-slider-value="1"
+                           data-slider-tooltip="hide"/>
+                </div>
+
+                <div id="edit" style="display: none">
+                    <button type="button" class="btn btn-secondary">Check</button>
+                </div>
+            </div>
+            <div class="col-lg-8 col-xs-12">
+                <div id="planImage" style="
+                width:672px;
+                height:647px;">
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<script src="https://code.jquery.com/jquery-3.3.1.min.js"
+        integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8="
+        crossorigin="anonymous"></script>
+<script src="/bootstrap-3.3.7/js/bootstrap.min.js"></script>
+<script src="/showloading/jquery.showloading.min.js"></script>
+<script src="/js/sweetalert.min.js"></script>
+<script src="/js/moment.min.js"></script>
+<script src="/myjs/custom.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-slider/10.4.2/bootstrap-slider.min.js"></script>
+
+<script th:inline="javascript">
+    /*<![CDATA[*/
+    var xStart = 0;
+    var yStart = 0;
+    var xEnd = 0;
+    var yEnd = 0;
+
+    var svgWidth = 672;
+    var svgHeight = 647;
+    var zoomNumber = 1;
+
+    var svgViewboxScale = [[${svgViewboxScale}]];
+
+    $(function () {
+
+        $.ajax({
+            url: 'https://mokulive.oss-cn-shanghai.aliyuncs.com/house.svg',
+            type: "get",
+            dataType: "text"
+        }).done(function (svg) {
+            $("#planImage").html(svg);
+        });
+
+        $("#planImage").mousedown(function (e) {
+            xStart = e.pageX - $(this).offset().left; //获取当前鼠标相对div的X坐标
+            yStart = e.pageY - $(this).offset().top; //获取当前鼠标相对div的Y坐标
+            if (xStart && yStart) {
+                $("#selectionArea").remove();
+                xEnd = xStart + 1;
+                yEnd = yStart + 1;
+                var path = '<g id="selectionArea"><path d="M' + xStart * 10 / zoomNumber + ' ' + yStart * 10 / zoomNumber +
+                    ' L' + xEnd * 10 / zoomNumber + ' ' + yStart * 10 / zoomNumber +
+                    ' L' + xEnd * 10 / zoomNumber + ' ' + yEnd * 10 / zoomNumber +
+                    ' L' + xStart * 10 / zoomNumber + ' ' + yEnd * 10 / zoomNumber + ' Z" fill="rgba(253,161,103,0.6)"/></g>';
+                $("#planImage").find("svg").append(path);
+                $("#planImage").find("svg").html($("#planImage").find("svg").html());
+            }
+        });
+
+        $("#planImage").mousemove(function (e) {
+            xEnd = e.pageX - $(this).offset().left; //获取当前鼠标相对div的X坐标
+            yEnd = e.pageY - $(this).offset().top; //获取当前鼠标相对div的Y坐标
+            if (xStart && yStart) {
+                $("#selectionArea").html(
+                    '<path d="M' + xStart * 10 / zoomNumber + ' ' + yStart * 10 / zoomNumber +
+                    ' L' + xEnd * 10 / zoomNumber + ' ' + yStart * 10 / zoomNumber +
+                    ' L' + xEnd * 10 / zoomNumber + ' ' + yEnd * 10 / zoomNumber +
+                    ' L' + xStart * 10 / zoomNumber + ' ' + yEnd * 10 / zoomNumber + ' Z"' +
+                    ' fill="rgba(253,161,103,0.6)"/>'
+                );
+                $("#planImage").find("svg").html($("#planImage").find("svg").html());
+            }
+        });
+
+        $("#planImage").mouseup(function (e) {
+            console.log(xStart + ',' + yStart + ',' + xEnd + ',' + yEnd);
+            xEnd = e.pageX - $(this).offset().left; //获取当前鼠标相对div的X坐标
+            yEnd = e.pageY - $(this).offset().top; //获取当前鼠标相对div的Y坐标
+            if (xStart && yStart) {
+                if (xStart === xEnd && yStart === yEnd) {
+                    $("#selectionArea").remove();
+                }
+
+
+                xStart = 0;
+                yStart = 0;
+                xEnd = 0;
+                yEnd = 0;
+            }
+
+            if ($("#selectionArea").attr("id")) {
+                $("#edit").show();
+            } else {
+                $("#edit").hide();
+            }
+        });
+
+        $("#zoom").change(function () {
+            var val = $(this).val();
+            zoomNumber = Number(val);
+            $("#planImage").css("width", svgWidth * zoomNumber);
+            $("#planImage").css("height", svgHeight * zoomNumber);
+            if ($("#selectionArea").attr("id")) {
+                $("#selectionArea").remove();
+            }
+            $("#edit").hide();
+        });
+    });
+    //]]>
+</script>
+</body>
+</html>
