@@ -103,7 +103,7 @@ public class Auth0Helper {
             body.setUserId(user.getString("user_id").isEmpty() ? null : user.getString("user_id"));
             body.setNick(user.getString("nickname").isEmpty() ? null : user.getString("nickname"));
             body.setAvatar(user.getString("picture").isEmpty() ? null : user.getString("picture"));
-            body.setEmail(user.getString("email").isEmpty() ? null : user.getString("email"));
+            body.setEmail(user.get("email") == null ? null : user.getString("email"));
             String bodyStr = JSONObject.toJSONString(body);
             response = Unirest.post(backendUrl + "/user/add")
                     .header("content-type", "application/json")
