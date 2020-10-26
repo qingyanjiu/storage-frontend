@@ -7,8 +7,8 @@
     <!-- <el-form-item label="用户id" prop="userid">
       <el-input v-model="dataForm.userid" placeholder="用户id"></el-input>
     </el-form-item> -->
-    <el-form-item label="建筑物名字" prop="buildingname">
-      <el-input v-model="dataForm.buildingname" placeholder="建筑物名字"></el-input>
+    <el-form-item label="住房名字" prop="buildingname">
+      <el-input v-model="dataForm.buildingname" placeholder="住房名字"></el-input>
     </el-form-item>
     <el-form-item label="平面图url" prop="planpicture">
       <el-input v-model="dataForm.planpicture" placeholder="平面图url"></el-input>
@@ -45,7 +45,7 @@
           //   { required: true, message: '用户id不能为空', trigger: 'blur' }
           // ],
           buildingname: [
-            { required: true, message: '建筑物名字不能为空', trigger: 'blur' }
+            { required: true, message: '住房名字不能为空', trigger: 'blur' }
           ],
           planpicture: [
             { required: false, message: '平面图url不能为空', trigger: 'blur' }

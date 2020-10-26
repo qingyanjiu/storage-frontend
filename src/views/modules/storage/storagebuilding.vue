@@ -38,7 +38,7 @@
         prop="buildingname"
         header-align="center"
         align="center"
-        label="建筑物名字">
+        label="住房名字">
       </el-table-column>
       <el-table-column
         prop="planpicture"
