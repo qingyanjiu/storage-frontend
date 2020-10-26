@@ -4,9 +4,9 @@
     :close-on-click-modal="false"
     :visible.sync="visible">
     <el-form :model="dataForm" :rules="dataRule" ref="dataForm" @keyup.enter.native="dataFormSubmit()" label-width="80px">
-    <el-form-item label="用户id" prop="userid">
+    <!-- <el-form-item label="用户id" prop="userid">
       <el-input v-model="dataForm.userid" placeholder="用户id"></el-input>
-    </el-form-item>
+    </el-form-item> -->
     <el-form-item label="建筑物名字" prop="buildingname">
       <el-input v-model="dataForm.buildingname" placeholder="建筑物名字"></el-input>
     </el-form-item>
@@ -34,27 +34,27 @@
         visible: false,
         dataForm: {
           buildingid: 0,
-          userid: '',
+          // userid: '',
           buildingname: '',
           planpicture: '',
           comment: '',
-          status: ''
+          status: '0'
         },
         dataRule: {
-          userid: [
-            { required: true, message: '用户id不能为空', trigger: 'blur' }
-          ],
+          // userid: [
+          //   { required: true, message: '用户id不能为空', trigger: 'blur' }
+          // ],
           buildingname: [
             { required: true, message: '建筑物名字不能为空', trigger: 'blur' }
           ],
           planpicture: [
-            { required: true, message: '平面图url不能为空', trigger: 'blur' }
+            { required: false, message: '平面图url不能为空', trigger: 'blur' }
           ],
           comment: [
-            { required: true, message: '描述不能为空', trigger: 'blur' }
+            { required: false, message: '描述不能为空', trigger: 'blur' }
           ],
           status: [
-            { required: true, message: '状态不能为空', trigger: 'blur' }
+            { required: false, message: '状态不能为空', trigger: 'blur' }
           ]
         }
       }
@@ -72,7 +72,7 @@
               params: this.$http.adornParams()
             }).then(({data}) => {
               if (data && data.code === 0) {
-                this.dataForm.userid = data.storageBuilding.userid
+                // this.dataForm.userid = data.storageBuilding.userid
                 this.dataForm.buildingname = data.storageBuilding.buildingname
                 this.dataForm.planpicture = data.storageBuilding.planpicture
                 this.dataForm.comment = data.storageBuilding.comment
@@ -91,7 +91,7 @@
               method: 'post',
               data: this.$http.adornData({
                 'buildingid': this.dataForm.buildingid || undefined,
-                'userid': this.dataForm.userid,
+                // 'userid': this.dataForm.userid,
                 'buildingname': this.dataForm.buildingname,
                 'planpicture': this.dataForm.planpicture,
                 'comment': this.dataForm.comment,

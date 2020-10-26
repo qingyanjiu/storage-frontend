@@ -4,9 +4,9 @@
     :close-on-click-modal="false"
     :visible.sync="visible">
     <el-form :model="dataForm" :rules="dataRule" ref="dataForm" @keyup.enter.native="dataFormSubmit()" label-width="80px">
-    <el-form-item label="用户id" prop="userid">
+    <!-- <el-form-item label="用户id" prop="userid">
       <el-input v-model="dataForm.userid" placeholder="用户id"></el-input>
-    </el-form-item>
+    </el-form-item> -->
     <el-form-item label="物品名称" prop="goodname">
       <el-input v-model="dataForm.goodname" placeholder="物品名称"></el-input>
     </el-form-item>
@@ -61,7 +61,7 @@
         visible: false,
         dataForm: {
           goodsid: 0,
-          userid: '',
+          // userid: '',
           goodname: '',
           owername: '',
           picture: '',
@@ -77,9 +77,9 @@
           status: ''
         },
         dataRule: {
-          userid: [
-            { required: true, message: '用户id不能为空', trigger: 'blur' }
-          ],
+          // userid: [
+          //   { required: true, message: '用户id不能为空', trigger: 'blur' }
+          // ],
           goodname: [
             { required: true, message: '物品名称不能为空', trigger: 'blur' }
           ],
@@ -135,7 +135,7 @@
               params: this.$http.adornParams()
             }).then(({data}) => {
               if (data && data.code === 0) {
-                this.dataForm.userid = data.storageGoods.userid
+                // this.dataForm.userid = data.storageGoods.userid
                 this.dataForm.goodname = data.storageGoods.goodname
                 this.dataForm.owername = data.storageGoods.owername
                 this.dataForm.picture = data.storageGoods.picture
@@ -163,7 +163,7 @@
               method: 'post',
               data: this.$http.adornData({
                 'goodsid': this.dataForm.goodsid || undefined,
-                'userid': this.dataForm.userid,
+                // 'userid': this.dataForm.userid,
                 'goodname': this.dataForm.goodname,
                 'owername': this.dataForm.owername,
                 'picture': this.dataForm.picture,
