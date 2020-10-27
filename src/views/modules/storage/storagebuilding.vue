@@ -23,18 +23,6 @@
         width="50">
       </el-table-column>
       <el-table-column
-        prop="buildingid"
-        header-align="center"
-        align="center"
-        label="id">
-      </el-table-column>
-      <el-table-column
-        prop="userid"
-        header-align="center"
-        align="center"
-        label="用户id">
-      </el-table-column>
-      <el-table-column
         prop="buildingname"
         header-align="center"
         align="center"
@@ -56,6 +44,7 @@
         prop="status"
         header-align="center"
         align="center"
+        :formatter="statusFormatter"
         label="状态">
       </el-table-column>
       <el-table-column
@@ -181,6 +170,9 @@
             }
           })
         })
+      },
+      statusFormatter (row, column, cellValue, index) {
+        return cellValue === '0' ? '有效' : '失效'
       }
     }
   }

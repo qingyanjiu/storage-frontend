@@ -16,9 +16,6 @@
     <el-form-item label="描述" prop="comment">
       <el-input v-model="dataForm.comment" placeholder="描述"></el-input>
     </el-form-item>
-    <el-form-item label="状态" prop="status">
-      <el-input v-model="dataForm.status" placeholder="状态"></el-input>
-    </el-form-item>
     </el-form>
     <span slot="footer" class="dialog-footer">
       <el-button @click="visible = false">取消</el-button>

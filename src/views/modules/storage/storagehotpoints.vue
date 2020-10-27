@@ -23,18 +23,6 @@
         width="50">
       </el-table-column>
       <el-table-column
-        prop="id"
-        header-align="center"
-        align="center"
-        label="">
-      </el-table-column>
-      <el-table-column
-        prop="userid"
-        header-align="center"
-        align="center"
-        label="用户id">
-      </el-table-column>
-      <el-table-column
         prop="buildingid"
         header-align="center"
         align="center"
@@ -44,25 +32,7 @@
         prop="xstart"
         header-align="center"
         align="center"
-        label="热点坐标">
-      </el-table-column>
-      <el-table-column
-        prop="ystart"
-        header-align="center"
-        align="center"
-        label="热点坐标">
-      </el-table-column>
-      <el-table-column
-        prop="xend"
-        header-align="center"
-        align="center"
-        label="热点坐标">
-      </el-table-column>
-      <el-table-column
-        prop="yend"
-        header-align="center"
-        align="center"
-        label="热点坐标">
+        label="热点位置">
       </el-table-column>
       <el-table-column
         prop="hotpointname"

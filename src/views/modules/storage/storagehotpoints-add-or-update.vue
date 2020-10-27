@@ -4,23 +4,11 @@
     :close-on-click-modal="false"
     :visible.sync="visible">
     <el-form :model="dataForm" :rules="dataRule" ref="dataForm" @keyup.enter.native="dataFormSubmit()" label-width="80px">
-    <el-form-item label="用户id" prop="userid">
-      <el-input v-model="dataForm.userid" placeholder="用户id"></el-input>
-    </el-form-item>
     <el-form-item label="建筑物id" prop="buildingid">
       <el-input v-model="dataForm.buildingid" placeholder="建筑物id"></el-input>
     </el-form-item>
-    <el-form-item label="热点坐标" prop="xstart">
-      <el-input v-model="dataForm.xstart" placeholder="热点坐标"></el-input>
-    </el-form-item>
-    <el-form-item label="热点坐标" prop="ystart">
-      <el-input v-model="dataForm.ystart" placeholder="热点坐标"></el-input>
-    </el-form-item>
-    <el-form-item label="热点坐标" prop="xend">
-      <el-input v-model="dataForm.xend" placeholder="热点坐标"></el-input>
-    </el-form-item>
-    <el-form-item label="热点坐标" prop="yend">
-      <el-input v-model="dataForm.yend" placeholder="热点坐标"></el-input>
+    <el-form-item label="热点位置" prop="xstart">
+      <el-input v-model="dataForm.xstart" placeholder="热点位置"></el-input>
     </el-form-item>
     <el-form-item label="热点名称" prop="hotpointname">
       <el-input v-model="dataForm.hotpointname" placeholder="热点名称"></el-input>
@@ -54,37 +42,23 @@
           yend: '',
           hotpointname: '',
           comment: '',
-          status: ''
+          status: '0'
         },
         dataRule: {
-          userid: [
-            { required: true, message: '用户id不能为空', trigger: 'blur' }
-          ],
           buildingid: [
             { required: true, message: '建筑物id不能为空', trigger: 'blur' }
           ],
           xstart: [
-            { required: true, message: '热点坐标不能为空', trigger: 'blur' }
-          ],
-          ystart: [
-            { required: true, message: '热点坐标不能为空', trigger: 'blur' }
-          ],
-          xend: [
-            { required: true, message: '热点坐标不能为空', trigger: 'blur' }
-          ],
-          yend: [
-            { required: true, message: '热点坐标不能为空', trigger: 'blur' }
+            { required: true, message: '热点位置不能为空', trigger: 'blur' }
           ],
           hotpointname: [
             { required: true, message: '热点名称不能为空', trigger: 'blur' }
           ],
           comment: [
-            { required: true, message: '热点描述不能为空', trigger: 'blur' }
-          ],
-          status: [
-            { required: true, message: '状态不能为空', trigger: 'blur' }
+            { required: false, message: '热点描述不能为空', trigger: 'blur' }
           ]
-        }
+        },
+        buildingList: []
       }
     },
     methods: {
@@ -112,6 +86,16 @@
               }
             })
           }
+          this.$http({
+            url: this.$http.adornUrl(`/storage/storagebuilding/qryUserBuildings`),
+            method: 'get',
+            params: this.$http.adornParams()
+          }).then(({data}) => {
+            if (data && data.code === 0) {
+              this.buildingList = data.buildings
+              console.log(this.buildingList)
+            }
+          })
         })
       },
       // 表单提交
